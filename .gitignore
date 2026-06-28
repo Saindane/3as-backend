@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv/
+venv/
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg
+firebase-credentials.json
+postgres_data/
