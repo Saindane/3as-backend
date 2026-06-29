@@ -5,7 +5,7 @@ from alembic import context
 
 # Load app models so Alembic can detect them
 from app.db.base import Base
-from app.models import user, otp, audit_log, property, bill, payment, complaint, notice  # noqa: F401
+from app.models import user, otp, audit_log, property, bill, payment, complaint, notice, setting  # noqa: F401
 
 config = context.config
 
