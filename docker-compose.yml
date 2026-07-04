@@ -20,8 +20,8 @@ services:
     container_name: 3as_db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: 3as_db
+      POSTGRES_PASSWORD: Admin
+      POSTGRES_DB: as3_db
     ports:
       - "5432:5432"
     volumes:
