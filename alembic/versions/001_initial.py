@@ -3,7 +3,6 @@
 Revision ID: 001_initial
 Revises: 
 Create Date: 2025-06-28
-
 """
 from typing import Sequence, Union
 from alembic import op
@@ -26,9 +25,9 @@ def upgrade() -> None:
         sa.Column("password_hash", sa.String(255), nullable=False),
         sa.Column(
             "role",
-            sa.Enum("resident", "management", "admin", name="userrole"),
+            sa.Enum("RESIDENT", "MANAGEMENT", "ADMIN", name="userrole"),
             nullable=False,
-            server_default="resident",
+            server_default="RESIDENT",
         ),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
         sa.Column("fcm_token", sa.String(255), nullable=True),
@@ -68,7 +67,7 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("log_id"),
     )
 
-    # Seed: default admin user (password: Admin@3as123)
+    # Seed: default admin user (password: demo1234)
     op.execute("""
         INSERT INTO users (name, mobile, email, password_hash, role, is_active)
         VALUES (
@@ -76,7 +75,7 @@ def upgrade() -> None:
             '9999999999',
             'admin@3ascomplex.in',
             '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.',
-            'admin',
+            'ADMIN',
             true
         )
     """)

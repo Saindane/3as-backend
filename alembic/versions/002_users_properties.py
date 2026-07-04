@@ -39,8 +39,8 @@ def upgrade() -> None:
         sa.Column("occupant_id",    sa.Integer(), nullable=False),
         sa.Column("property_id",    sa.Integer(), nullable=False),
         sa.Column("user_id",        sa.Integer(), nullable=False),
-        sa.Column("occupancy_type", sa.Enum("owner", "tenant", name="occupancytype"),
-                  nullable=False, server_default="owner"),
+        sa.Column("occupancy_type", sa.Enum("OWNER", "TENANT", name="occupancytype"),
+                  nullable=False, server_default="OWNER"),
         sa.Column("created_at",     sa.DateTime(timezone=True), server_default=sa.text("now()")),
         sa.ForeignKeyConstraint(["property_id"], ["properties.property_id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"],     ["users.user_id"],          ondelete="CASCADE"),
@@ -141,11 +141,11 @@ def upgrade() -> None:
     op.execute("""
         INSERT INTO users (name, mobile, email, password_hash, role, is_active) VALUES
         ('Rajesh Kumar',  '9876543210', 'rajesh@test.com',
-         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'resident', true),
+         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'RESIDENT', true),
         ('Priya Menon',   '8765432109', 'priya@test.com',
-         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'management', true),
+         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'MANAGEMENT', true),
         ('Suresh Admin',  '7654321098', 'suresh@test.com',
-         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'admin', true)
+         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'ADMIN', true)
         ON CONFLICT (mobile) DO NOTHING
     """)
 
@@ -164,7 +164,7 @@ def upgrade() -> None:
     # Seed occupants
     op.execute("""
         INSERT INTO occupants (property_id, user_id, occupancy_type)
-        SELECT p.property_id, u.user_id, 'owner'
+        SELECT p.property_id, u.user_id, 'OWNER'
         FROM properties p JOIN users u ON u.mobile='9876543210' WHERE p.unit_no='4B'
         ON CONFLICT DO NOTHING
     """)

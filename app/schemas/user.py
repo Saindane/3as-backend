@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     mobile:   str
     email:    Optional[str] = None
     password: str
-    role:     str = "resident"
+    role:     str = "RESIDENT"
 
     @field_validator("mobile")
     @classmethod
@@ -29,15 +29,16 @@ class UserCreate(BaseModel):
     @field_validator("role")
     @classmethod
     def validate_role(cls, v: str) -> str:
-        if v not in ("resident", "management", "admin"):
+        v = v.upper()
+        if v not in ("RESIDENT", "MANAGEMENT", "ADMIN"):
             raise ValueError("Role must be resident, management, or admin")
         return v
 
 
 class UserUpdate(BaseModel):
-    name:      Optional[str] = None
-    email:     Optional[str] = None
-    role:      Optional[str] = None
+    name:      Optional[str]  = None
+    email:     Optional[str]  = None
+    role:      Optional[str]  = None
     is_active: Optional[bool] = None
 
 
@@ -54,5 +55,5 @@ class UserResponse(BaseModel):
 
 
 class UserListResponse(BaseModel):
-    total:  int
-    items:  list[UserResponse]
+    total: int
+    items: list[UserResponse]
