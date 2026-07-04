@@ -13,19 +13,25 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS
+# ── CORS ─────────────────────────────────────────────────────────
+# Allow all origins in development. In production, replace "*" with
+# your actual frontend domain in the ALLOWED_ORIGINS .env variable.
+origins = settings.allowed_origins_list
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins_list,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
-# Routers
+# ── Routers ──────────────────────────────────────────────────────
 app.include_router(api_router)
 
 
+# ── Scheduler lifecycle ──────────────────────────────────────────
 @app.on_event("startup")
 async def on_startup():
     start_scheduler()
@@ -36,6 +42,7 @@ async def on_shutdown():
     stop_scheduler()
 
 
+# ── Health ───────────────────────────────────────────────────────
 @app.get("/", tags=["Health"])
 def root():
     return {"status": "ok", "app": settings.APP_NAME, "version": "1.0.0"}
