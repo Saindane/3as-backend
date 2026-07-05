@@ -6,27 +6,27 @@ from app.db.base import Base
 
 
 class ComplaintCategory(str, enum.Enum):
-    ELECTRICAL   = "ELECTRICAL"
-    PLUMBING     = "PLUMBING"
-    CIVIL        = "CIVIL"
-    SECURITY     = "SECURITY"
-    HOUSEKEEPING = "HOUSEKEEPING"
-    COMMON_AREA  = "COMMON_AREA"
-    OTHER        = "OTHER"
+    ELECTRICAL   = "electrical"
+    PLUMBING     = "plumbing"
+    CIVIL        = "civil"
+    SECURITY     = "security"
+    HOUSEKEEPING = "housekeeping"
+    COMMON_AREA  = "common_area"
+    OTHER        = "other"
 
 
 class ComplaintPriority(str, enum.Enum):
-    LOW    = "LOW"
-    MEDIUM = "MEDIUM"
-    HIGH   = "HIGH"
+    LOW    = "low"
+    MEDIUM = "medium"
+    HIGH   = "high"
 
 
 class ComplaintStatus(str, enum.Enum):
-    NEW         = "NEW"
-    ASSIGNED    = "ASSIGNED"
-    IN_PROGRESS = "IN_PROGRESS"
-    RESOLVED    = "RESOLVED"
-    CLOSED      = "CLOSED"
+    NEW         = "new"
+    ASSIGNED    = "assigned"
+    IN_PROGRESS = "in_progress"
+    RESOLVED    = "resolved"
+    CLOSED      = "closed"
 
 
 class Complaint(Base):

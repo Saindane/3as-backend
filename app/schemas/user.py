@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     mobile:   str
     email:    Optional[str] = None
     password: str
-    role:     str = "RESIDENT"
+    role:     str = "resident"
 
     @field_validator("mobile")
     @classmethod
@@ -17,22 +17,22 @@ class UserCreate(BaseModel):
         v = v.strip().replace(" ", "")
         if not re.fullmatch(r"[6-9]\d{9}", v):
             raise ValueError("Enter a valid 10-digit mobile number")
-        return v
+        return v.lower()
 
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
-        return v
+        return v.lower()
 
     @field_validator("role")
     @classmethod
     def validate_role(cls, v: str) -> str:
-        v = v.upper()
-        if v not in ("RESIDENT", "MANAGEMENT", "ADMIN"):
+        
+        if v.lower() not in ("resident", "management", "admin"):
             raise ValueError("Role must be resident, management, or admin")
-        return v
+        return v.lower()
 
 
 class UserUpdate(BaseModel):

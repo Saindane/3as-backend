@@ -14,7 +14,7 @@ def create_property(db: Session, payload: PropertyCreate, created_by_id: int) ->
     prop = Property(
         unit_no=payload.unit_no,
         floor=payload.floor,
-        type=PropertyType(payload.type),
+        type=PropertyType(payload.type.lower()),
         area_sqft=payload.area_sqft,
         owner_id=payload.owner_id,
     )
@@ -52,7 +52,7 @@ def update_property(db: Session, property_id: int, payload: PropertyUpdate,
     prop = get_property(db, property_id)
     if payload.unit_no   is not None: prop.unit_no   = payload.unit_no
     if payload.floor     is not None: prop.floor     = payload.floor
-    if payload.type      is not None: prop.type      = PropertyType(payload.type)
+    if payload.type      is not None: prop.type      = PropertyType(payload.type.lower())
     if payload.area_sqft is not None: prop.area_sqft = payload.area_sqft
     if payload.owner_id  is not None:
         prop.owner_id = payload.owner_id
@@ -96,17 +96,17 @@ def get_dashboard_stats(db: Session, user_id: int = None) -> DashboardStats:
     total_units   = db.query(Property).count()
     total_users   = db.query(User).count()
     active_users  = db.query(User).filter(User.is_active == True).count()
-    bills_paid    = db.query(Bill).filter(Bill.status == BillStatus.PAID).count()
-    bills_pending = db.query(Bill).filter(Bill.status == BillStatus.PENDING).count()
+    bills_paid    = db.query(Bill).filter(Bill.status == BillStatus.paid).count()
+    bills_pending = db.query(Bill).filter(Bill.status == BillStatus.pending).count()
     open_comp     = db.query(Complaint).filter(
-        Complaint.status.notin_([ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED])
+        Complaint.status.notin_([ComplaintStatus.resolved, ComplaintStatus.closed])
     ).count()
 
     from sqlalchemy import func as sqlfunc
     coll = db.query(sqlfunc.coalesce(sqlfunc.sum(Bill.total), 0)).filter(
-        Bill.status == BillStatus.PAID).scalar()
+        Bill.status == BillStatus.paid).scalar()
     pend = db.query(sqlfunc.coalesce(sqlfunc.sum(Bill.total), 0)).filter(
-        Bill.status == BillStatus.PENDING).scalar()
+        Bill.status == BillStatus.pending).scalar()
 
     return DashboardStats(
         total_units=total_units,
@@ -129,11 +129,11 @@ def _add_occupant(db, property_id, user_id, occupancy_type):
         Occupant.user_id == user_id
     ).first()
     if existing:
-        existing.occupancy_type = OccupancyType(occupancy_type)
+        existing.occupancy_type = OccupancyType(occupancy_type.lower())
         db.commit()
         return existing
     occ = Occupant(property_id=property_id, user_id=user_id,
-                   occupancy_type=OccupancyType(occupancy_type))
+                   occupancy_type=OccupancyType(occupancy_type.lower()))
     db.add(occ)
     db.commit()
     db.refresh(occ)

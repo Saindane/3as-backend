@@ -7,81 +7,61 @@ FastAPI + PostgreSQL backend for the 3As Complex Maintenance Management System.
 - **Database**: PostgreSQL 16 + SQLAlchemy 2.0 + Alembic
 - **Auth**: JWT (python-jose) + bcrypt + OTP
 - **Scheduler**: APScheduler (nightly penalty cron at 00:05 IST)
-- **Storage**: AWS S3 / MinIO (payment screenshots)
-- **Push**: Firebase Admin SDK (FCM)
-
-## Project Structure
-```
-app/
-├── api/v1/endpoints/   # Route handlers per module
-├── core/               # Config, security, dependencies, scheduler
-├── db/                 # Database session, base
-├── models/             # SQLAlchemy ORM models
-├── schemas/            # Pydantic request/response schemas
-├── services/           # Business logic layer
-└── utils/              # Helpers (OTP, FCM, S3)
-tests/                  # pytest test suite
-alembic/versions/       # DB migrations (001 → 003)
-```
 
 ## Quick Start (Local — no Docker)
 
 ```bash
-# 1. Clone and enter project
 git clone https://github.com/Saindane/3as-backend.git
 cd 3as-backend
-
-# 2. Create virtual environment
 python3 -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
-
-# 3. Install dependencies
 pip install -r requirements.txt
+```
 
-# 4. Create database (PostgreSQL must be running)
-createdb as3_db                 # password: Admin
+**Create database in pgAdmin or psql:**
+```sql
+CREATE DATABASE as3_db;
+```
 
-# 5. Copy and configure .env
+**Configure .env:**
+```bash
 cp .env.example .env
-# Edit .env — paste your SECRET_KEY (run: openssl rand -hex 32)
+# Edit .env — paste your SECRET_KEY (run: python -c "import secrets; print(secrets.token_hex(32))")
+```
 
-# 6. Run migrations (creates tables + seeds demo users)
+**Run migrations + start server:**
+```bash
 alembic upgrade head
-
-# 7. Start server
 uvicorn app.main:app --reload
 ```
 
 API docs → http://localhost:8000/docs
 
-## Database credentials (local)
+## Database credentials
 ```
-Host:     localhost
-Port:     5432
-User:     postgres
-Password: Admin
-Database: as3_db
+Host: localhost  |  Port: 5432  |  User: postgres  |  Password: Admin  |  Database: as3_db
 ```
 
-## Demo accounts (seeded by migration)
+## Demo accounts (seeded automatically)
 | Name | Mobile | Password | Role |
 |---|---|---|---|
-| Rajesh Kumar | 9876543210 | demo1234 | Resident |
-| Priya Menon  | 8765432109 | demo1234 | Management |
-| Suresh Admin | 7654321098 | demo1234 | Admin |
+| Rajesh Kumar | 9876543210 | demo1234 | resident |
+| Priya Menon  | 8765432109 | demo1234 | management |
+| Suresh Admin | 7654321098 | demo1234 | admin |
 
 ## Feature Implementation Status
-- [x] **Feature 1** — Authentication: login, JWT access+refresh tokens, OTP send/verify, password reset, FCM token, audit logs
-- [x] **Feature 2** — Users & Properties: full CRUD, role-based guards (admin/mgmt/resident), occupant linking, dashboard stats
-- [x] **Feature 3** — Bills + Penalty Engine: bulk generation, penalty formula (Outstanding × Daily% × Days), nightly APScheduler cron, collection summary, waive bill
-- [ ] **Feature 4** — Payments: QR display, UTR + screenshot upload, payment verification by management
-- [ ] **Feature 5** — Complaints: raise, assign, status tracking, resolution
-- [ ] **Feature 6** — Notices + FCM Push: publish notices, broadcast push to all devices
-- [ ] **Feature 7** — MIS Reports: collection report, defaulter list, complaint analytics, audit export
-- [ ] **Feature 8** — Settings: penalty rate config, UPI/gateway config, society info
+- [x] **Feature 1** — Authentication: login, JWT, OTP, password reset
+- [x] **Feature 2** — Users & Properties: CRUD, role guards, dashboard stats
+- [x] **Feature 3** — Bills + Penalty Engine: bulk generation, nightly cron
+- [x] **Feature 4** — Payments: submit UTR, screenshot, verify/reject
+- [x] **Feature 5** — Complaints: raise, assign, track, resolve
+- [x] **Feature 6** — Notices: publish, list, FCM push placeholder
+- [x] **Feature 7** — MIS Reports: collection, defaulters, analytics, audit logs
+- [x] **Feature 8** — Settings: configurable penalty rate, UPI, society info
 
-## Implemented API Endpoints
+## All API Endpoints
 ```
+# Auth
 POST   /api/v1/auth/login
 POST   /api/v1/auth/refresh
 GET    /api/v1/auth/me
@@ -90,6 +70,7 @@ POST   /api/v1/auth/otp/verify
 POST   /api/v1/auth/password/reset
 POST   /api/v1/auth/fcm-token
 
+# Users
 GET    /api/v1/users
 POST   /api/v1/users
 GET    /api/v1/users/me
@@ -97,6 +78,7 @@ GET    /api/v1/users/:id
 PATCH  /api/v1/users/:id
 DELETE /api/v1/users/:id
 
+# Properties
 GET    /api/v1/properties
 POST   /api/v1/properties
 GET    /api/v1/properties/my
@@ -106,6 +88,7 @@ PATCH  /api/v1/properties/:id
 DELETE /api/v1/properties/:id
 POST   /api/v1/properties/:id/occupants
 
+# Bills
 GET    /api/v1/bills
 POST   /api/v1/bills/generate
 GET    /api/v1/bills/penalties/preview
@@ -113,12 +96,36 @@ POST   /api/v1/bills/penalties/apply
 GET    /api/v1/bills/summary
 GET    /api/v1/bills/:id
 PATCH  /api/v1/bills/:id/waive
-```
 
-## API Base URL
-`/api/v1/`
+# Payments
+GET    /api/v1/payments
+GET    /api/v1/payments/pending
+POST   /api/v1/payments
+PATCH  /api/v1/payments/:id/verify
 
-All endpoints except `/auth/login`, `/auth/refresh`, `/auth/otp/*`, `/auth/password/reset` require:
-```
-Authorization: Bearer <access_token>
+# Complaints
+GET    /api/v1/complaints
+POST   /api/v1/complaints
+GET    /api/v1/complaints/:id
+PATCH  /api/v1/complaints/:id
+DELETE /api/v1/complaints/:id
+
+# Notices
+GET    /api/v1/notices
+POST   /api/v1/notices
+GET    /api/v1/notices/:id
+PATCH  /api/v1/notices/:id
+DELETE /api/v1/notices/:id
+
+# Reports
+GET    /api/v1/reports/collection
+GET    /api/v1/reports/defaulters
+GET    /api/v1/reports/complaints
+GET    /api/v1/reports/audit-logs
+
+# Settings
+GET    /api/v1/settings
+GET    /api/v1/settings/:key
+PATCH  /api/v1/settings/:key
+DELETE /api/v1/settings/:key
 ```

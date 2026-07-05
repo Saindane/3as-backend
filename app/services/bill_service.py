@@ -89,7 +89,7 @@ def generate_bills(
             penalty=round(penalty, 2),
             total=round(total, 2),
             due_date=payload.due_date,
-            status=BillStatus.PENDING,
+            status=BillStatus.pending,
         )
         db.add(bill)
         generated   += 1
@@ -123,7 +123,7 @@ def apply_penalties_for_all(db: Session) -> int:
     updated     = 0
 
     overdue_bills = db.query(Bill).filter(
-        Bill.status.in_([BillStatus.PENDING, BillStatus.OVERDUE]),
+        Bill.status.in_([BillStatus.pending, BillStatus.overdue]),
         Bill.due_date < today,
     ).all()
 
@@ -134,7 +134,7 @@ def apply_penalties_for_all(db: Session) -> int:
         if penalty != bill.penalty:
             bill.penalty = penalty
             bill.total   = round(bill.maintenance + penalty, 2)
-            bill.status  = BillStatus.OVERDUE
+            bill.status  = BillStatus.overdue
             updated += 1
 
     if updated:
@@ -150,7 +150,7 @@ def preview_penalties(db: Session) -> List[PenaltyPreview]:
     daily_rate = get_daily_penalty_pct(db)
 
     overdue = db.query(Bill).filter(
-        Bill.status.in_([BillStatus.PENDING, BillStatus.OVERDUE]),
+        Bill.status.in_([BillStatus.pending, BillStatus.overdue]),
         Bill.due_date < today,
     ).all()
 
@@ -235,7 +235,7 @@ def get_bills_for_resident(db: Session, user_id: int) -> dict:
 
 def waive_bill(db: Session, bill_id: int, waived_by_id: int) -> Bill:
     bill = get_bill(db, bill_id)
-    bill.status  = BillStatus.WAIVED
+    bill.status  = BillStatus.waived
     bill.penalty = 0.0
     bill.total   = bill.maintenance
     db.commit()
@@ -249,11 +249,11 @@ def get_collection_summary(db: Session, month: int, year: int) -> dict:
     bills = db.query(Bill).filter(Bill.month == month, Bill.year == year).all()
 
     total_units   = len(bills)
-    paid_amount   = sum(b.total for b in bills if b.status == BillStatus.PAID)
-    pending_amount= sum(b.total for b in bills if b.status in (BillStatus.PENDING, BillStatus.OVERDUE))
-    paid_count    = sum(1 for b in bills if b.status == BillStatus.PAID)
-    pending_count = sum(1 for b in bills if b.status in (BillStatus.PENDING, BillStatus.OVERDUE))
-    overdue_count = sum(1 for b in bills if b.status == BillStatus.OVERDUE)
+    paid_amount   = sum(b.total for b in bills if b.status == BillStatus.paid)
+    pending_amount= sum(b.total for b in bills if b.status in (BillStatus.pending, BillStatus.overdue))
+    paid_count    = sum(1 for b in bills if b.status == BillStatus.paid)
+    pending_count = sum(1 for b in bills if b.status in (BillStatus.pending, BillStatus.overdue))
+    overdue_count = sum(1 for b in bills if b.status == BillStatus.overdue)
 
     return {
         "month": month, "year": year,
@@ -274,7 +274,7 @@ def _calculate_pending_penalty(db: Session, property_id: int) -> float:
     """Sum up outstanding penalties from any existing overdue bills."""
     overdue = db.query(Bill).filter(
         Bill.property_id == property_id,
-        Bill.status.in_([BillStatus.PENDING, BillStatus.OVERDUE]),
+        Bill.status.in_([BillStatus.pending, BillStatus.overdue]),
     ).all()
     return sum(b.penalty for b in overdue)
 

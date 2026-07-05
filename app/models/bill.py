@@ -6,10 +6,10 @@ from app.db.base import Base
 
 
 class BillStatus(str, enum.Enum):
-    PENDING  = "PENDING"
-    PAID     = "PAID"
-    OVERDUE  = "OVERDUE"
-    WAIVED   = "WAIVED"
+    PENDING  = "pending"
+    PAID     = "paid"
+    OVERDUE  = "overdue"
+    WAIVED   = "waived"
 
 
 class Bill(Base):
