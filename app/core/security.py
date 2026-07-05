@@ -1,20 +1,33 @@
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Union
+from typing import Optional
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# ── Password hashing (using bcrypt directly — avoids passlib version conflict) ──
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    """Hash a plaintext password using bcrypt."""
+    password_bytes = password.encode("utf-8")
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    """Verify a plaintext password against a bcrypt hash."""
+    try:
+        return bcrypt.checkpw(
+            plain.encode("utf-8"),
+            hashed.encode("utf-8"),
+        )
+    except Exception:
+        return False
 
+
+# ── JWT ───────────────────────────────────────────────────────────
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
@@ -43,7 +56,7 @@ def decode_token(token: str) -> Optional[dict]:
 def create_token_pair(user_id: int, role: str) -> dict:
     data = {"sub": str(user_id), "role": role}
     return {
-        "access_token": create_access_token(data),
+        "access_token":  create_access_token(data),
         "refresh_token": create_refresh_token(data),
-        "token_type": "bearer",
+        "token_type":    "bearer",
     }

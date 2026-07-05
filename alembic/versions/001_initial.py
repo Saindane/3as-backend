@@ -74,7 +74,7 @@ def upgrade() -> None:
             'Super Admin',
             '9999999999',
             'admin@3ascomplex.in',
-            '$2b$12$KWx1E.8KUedSA1uN8FCdTOjcnCry9y1y0ir7XHUh9.espiNgmEuIe',
+            '$2b$12$EVKYF15wY90sP/CzblpKxubht3q6Cfg0EIZ3nEUR6xCpjqsrXmXuO',
             'ADMIN',
             true
         )

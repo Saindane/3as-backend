@@ -141,11 +141,11 @@ def upgrade() -> None:
     op.execute("""
         INSERT INTO users (name, mobile, email, password_hash, role, is_active) VALUES
         ('Rajesh Kumar',  '9876543210', 'rajesh@test.com',
-         '$2b$12$KWx1E.8KUedSA1uN8FCdTOjcnCry9y1y0ir7XHUh9.espiNgmEuIe', 'RESIDENT', true),
+         '$2b$12$EVKYF15wY90sP/CzblpKxubht3q6Cfg0EIZ3nEUR6xCpjqsrXmXuO', 'RESIDENT', true),
         ('Priya Menon',   '8765432109', 'priya@test.com',
-         '$2b$12$KWx1E.8KUedSA1uN8FCdTOjcnCry9y1y0ir7XHUh9.espiNgmEuIe', 'MANAGEMENT', true),
+         '$2b$12$EVKYF15wY90sP/CzblpKxubht3q6Cfg0EIZ3nEUR6xCpjqsrXmXuO', 'MANAGEMENT', true),
         ('Suresh Admin',  '7654321098', 'suresh@test.com',
-         '$2b$12$KWx1E.8KUedSA1uN8FCdTOjcnCry9y1y0ir7XHUh9.espiNgmEuIe', 'ADMIN', true)
+         '$2b$12$EVKYF15wY90sP/CzblpKxubht3q6Cfg0EIZ3nEUR6xCpjqsrXmXuO', 'ADMIN', true)
         ON CONFLICT (mobile) DO NOTHING
     """)
 
