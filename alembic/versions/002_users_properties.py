@@ -141,23 +141,23 @@ def upgrade() -> None:
     op.execute("""
         INSERT INTO users (name, mobile, email, password_hash, role, is_active) VALUES
         ('Rajesh Kumar',  '9876543210', 'rajesh@test.com',
-         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'RESIDENT', true),
+         '$2b$12$KWx1E.8KUedSA1uN8FCdTOjcnCry9y1y0ir7XHUh9.espiNgmEuIe', 'RESIDENT', true),
         ('Priya Menon',   '8765432109', 'priya@test.com',
-         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'MANAGEMENT', true),
+         '$2b$12$KWx1E.8KUedSA1uN8FCdTOjcnCry9y1y0ir7XHUh9.espiNgmEuIe', 'MANAGEMENT', true),
         ('Suresh Admin',  '7654321098', 'suresh@test.com',
-         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj2NqIdTh2/.', 'ADMIN', true)
+         '$2b$12$KWx1E.8KUedSA1uN8FCdTOjcnCry9y1y0ir7XHUh9.espiNgmEuIe', 'ADMIN', true)
         ON CONFLICT (mobile) DO NOTHING
     """)
 
     # Seed demo properties
     op.execute("""
         INSERT INTO properties (unit_no, floor, type, area_sqft, owner_id)
-        SELECT '4B', 4, 'residential', 1050, user_id FROM users WHERE mobile='9876543210'
+        SELECT '4B', 4, 'RESIDENTIAL', 1050, user_id FROM users WHERE mobile='9876543210'
         ON CONFLICT (unit_no) DO NOTHING
     """)
     op.execute("""
         INSERT INTO properties (unit_no, floor, type, area_sqft, owner_id)
-        SELECT '2A', 2, 'residential', 850, user_id FROM users WHERE mobile='8765432109'
+        SELECT '2A', 2, 'RESIDENTIAL', 850, user_id FROM users WHERE mobile='8765432109'
         ON CONFLICT (unit_no) DO NOTHING
     """)
 
