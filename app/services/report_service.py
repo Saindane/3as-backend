@@ -45,7 +45,7 @@ def collection_report(db: Session, month: int, year: int) -> dict:
 
 def defaulter_report(db: Session) -> dict:
     bills = db.query(Bill).filter(
-        Bill.status.in_([BillStatus.pending, BillStatus.overdue])
+        Bill.status.in_([BillStatus.PENDING, BillStatus.OVERDUE])
     ).order_by(Bill.year.desc(), Bill.month.desc()).all()
 
     result = []
@@ -78,10 +78,10 @@ def complaint_analytics(db: Session) -> dict:
     from app.models.complaint import ComplaintCategory
     total     = db.query(Complaint).count()
     open_c    = db.query(Complaint).filter(
-        Complaint.status.notin_([ComplaintStatus.resolved, ComplaintStatus.closed])
+        Complaint.status.notin_([ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED])
     ).count()
     resolved  = db.query(Complaint).filter(
-        Complaint.status.in_([ComplaintStatus.resolved, ComplaintStatus.closed])
+        Complaint.status.in_([ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED])
     ).count()
 
     by_category = []
@@ -89,7 +89,7 @@ def complaint_analytics(db: Session) -> dict:
         ct = db.query(Complaint).filter(Complaint.category == cat).count()
         op = db.query(Complaint).filter(
             Complaint.category == cat,
-            Complaint.status.notin_([ComplaintStatus.resolved, ComplaintStatus.closed])
+            Complaint.status.notin_([ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED])
         ).count()
         if ct > 0:
             by_category.append({

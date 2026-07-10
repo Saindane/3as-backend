@@ -25,16 +25,21 @@ def get_current_user(
 
     user_id = payload.get("sub")
     if not user_id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Invalid token payload")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
 
     user = db.query(User).filter(
-        User.user_id == int(user_id),
+        User.user_id  == int(user_id),
         User.is_active == True,
     ).first()
+
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="User not found or inactive")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+        )
     return user
 
 
@@ -43,19 +48,20 @@ def require_role(*roles: UserRole):
         if current_user.role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied. Required: {[r.value for r in roles]}",
+                detail=f"Access denied. Required role: {[r.value for r in roles]}",
             )
         return current_user
     return _checker
 
 
+# ── Convenience guards ────────────────────────────────────────────
 def require_admin(
-    user: User = Depends(require_role(UserRole.admin))
+    user: User = Depends(require_role(UserRole.ADMIN))
 ) -> User:
     return user
 
 
 def require_management(
-    user: User = Depends(require_role(UserRole.admin, UserRole.management))
+    user: User = Depends(require_role(UserRole.ADMIN, UserRole.MANAGEMENT))
 ) -> User:
     return user

@@ -21,7 +21,7 @@ def list_complaints(
     db:       Session       = Depends(get_db),
     current_user: User      = Depends(get_current_user),
 ):
-    if current_user.role == UserRole.resident:
+    if current_user.role == UserRole.RESIDENT:
         return complaint_service.get_my_complaints(db, current_user.user_id)
     return complaint_service.list_complaints(
         db, status=status, category=category,

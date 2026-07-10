@@ -96,17 +96,17 @@ def get_dashboard_stats(db: Session, user_id: int = None) -> DashboardStats:
     total_units   = db.query(Property).count()
     total_users   = db.query(User).count()
     active_users  = db.query(User).filter(User.is_active == True).count()
-    bills_paid    = db.query(Bill).filter(Bill.status == BillStatus.paid).count()
-    bills_pending = db.query(Bill).filter(Bill.status == BillStatus.pending).count()
+    bills_paid    = db.query(Bill).filter(Bill.status == BillStatus.PAID).count()
+    bills_pending = db.query(Bill).filter(Bill.status == BillStatus.PENDING).count()
     open_comp     = db.query(Complaint).filter(
-        Complaint.status.notin_([ComplaintStatus.resolved, ComplaintStatus.closed])
+        Complaint.status.notin_([ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED])
     ).count()
 
     from sqlalchemy import func as sqlfunc
     coll = db.query(sqlfunc.coalesce(sqlfunc.sum(Bill.total), 0)).filter(
-        Bill.status == BillStatus.paid).scalar()
+        Bill.status == BillStatus.PAID).scalar()
     pend = db.query(sqlfunc.coalesce(sqlfunc.sum(Bill.total), 0)).filter(
-        Bill.status == BillStatus.pending).scalar()
+        Bill.status == BillStatus.PENDING).scalar()
 
     return DashboardStats(
         total_units=total_units,

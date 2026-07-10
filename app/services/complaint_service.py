@@ -18,7 +18,7 @@ def raise_complaint(db: Session, payload: ComplaintCreateRequest, user_id: int) 
         raised_by=user_id,
         category=ComplaintCategory(payload.category),
         priority=ComplaintPriority(payload.priority),
-        status=ComplaintStatus.new,
+        status=ComplaintStatus.NEW,
         title=payload.title,
         description=payload.description,
     )
@@ -38,11 +38,11 @@ def update_complaint(db: Session, complaint_id: int,
         complaint.status      = ComplaintStatus(payload.status)
     if payload.assigned_to is not None:
         complaint.assigned_to = payload.assigned_to
-        if complaint.status == ComplaintStatus.new:
-            complaint.status = ComplaintStatus.assigned
+        if complaint.status == ComplaintStatus.NEW:
+            complaint.status = ComplaintStatus.ASSIGNED
     if payload.resolution  is not None:
         complaint.resolution  = payload.resolution
-        complaint.status      = ComplaintStatus.resolved
+        complaint.status      = ComplaintStatus.RESOLVED
     if payload.priority    is not None:
         complaint.priority    = ComplaintPriority(payload.priority)
 

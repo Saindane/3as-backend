@@ -13,7 +13,7 @@ def submit_payment(db: Session, payload: PaymentSubmitRequest, user_id: int) -> 
     bill = db.query(Bill).filter(Bill.bill_id == payload.bill_id).first()
     if not bill:
         raise HTTPException(status_code=404, detail="Bill not found")
-    if bill.status == BillStatus.paid:
+    if bill.status == BillStatus.PAID:
         raise HTTPException(status_code=400, detail="Bill already paid")
 
     payment = Payment(
@@ -22,7 +22,7 @@ def submit_payment(db: Session, payload: PaymentSubmitRequest, user_id: int) -> 
         utr=payload.utr,
         screenshot=payload.screenshot,
         mode=PaymentMode(payload.mode),
-        status=PaymentStatus.pending,
+        status=PaymentStatus.PENDING,
     )
     db.add(payment)
     db.commit()
@@ -38,19 +38,19 @@ def verify_payment(db: Session, payment_id: int, action: str, verified_by_id: in
     payment = _get_payment(db, payment_id)
 
     if action == "verify":
-        payment.status      = PaymentStatus.verified
+        payment.status      = PaymentStatus.VERIFIED
         payment.verified_by = verified_by_id
         payment.verified_at = datetime.now(timezone.utc)
 
         # Mark the bill as paid
         bill = db.query(Bill).filter(Bill.bill_id == payment.bill_id).first()
         if bill:
-            bill.status = BillStatus.paid
+            bill.status = BillStatus.PAID
 
         _log(db, verified_by_id, "PAYMENT_VERIFIED", entity_id=payment_id)
 
     elif action == "reject":
-        payment.status      = PaymentStatus.rejected
+        payment.status      = PaymentStatus.REJECTED
         payment.verified_by = verified_by_id
         payment.verified_at = datetime.now(timezone.utc)
         _log(db, verified_by_id, "PAYMENT_REJECTED", entity_id=payment_id)
@@ -100,7 +100,7 @@ def get_payments_for_resident(db: Session, user_id: int) -> dict:
 
 
 def get_pending_payments(db: Session) -> dict:
-    q = db.query(Payment).filter(Payment.status == PaymentStatus.pending)
+    q = db.query(Payment).filter(Payment.status == PaymentStatus.PENDING)
     total = q.count()
     items = q.order_by(Payment.created_at.asc()).all()
     return {"total": total, "items": [_to_dict(p) for p in items]}
