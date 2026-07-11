@@ -18,14 +18,30 @@ app = FastAPI(
 )
 
 # ── CORS ─────────────────────────────────────────────────────────
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.allowed_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
+# NOTE: allow_credentials=True cannot be used with allow_origins=["*"]
+# Chrome enforces this CORS spec rule and blocks all requests.
+# Solution: use explicit origins OR allow_origins=["*"] with credentials=False
+origins = settings.allowed_origins_list
+if origins == ["*"]:
+    # Wildcard mode — no credentials header (works for all origins)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
+else:
+    # Specific origins — credentials allowed
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
 
 # ── Routers ──────────────────────────────────────────────────────
 app.include_router(api_router)
