@@ -129,11 +129,11 @@ def _add_occupant(db, property_id, user_id, occupancy_type):
         Occupant.user_id == user_id
     ).first()
     if existing:
-        existing.occupancy_type = OccupancyType(occupancy_type.lower())
+        existing.occupancy_type = OccupancyType(occupancy_type.upper())
         db.commit()
         return existing
     occ = Occupant(property_id=property_id, user_id=user_id,
-                   occupancy_type=OccupancyType(occupancy_type.lower()))
+                   occupancy_type=OccupancyType(occupancy_type.upper()))
     db.add(occ)
     db.commit()
     db.refresh(occ)
