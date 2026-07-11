@@ -1,5 +1,5 @@
-from pydantic import BaseModel, field_validator, EmailStr
-from typing import Optional
+from pydantic import BaseModel, field_validator
+from typing import Optional, List
 from datetime import datetime
 import re
 
@@ -9,30 +9,29 @@ class UserCreate(BaseModel):
     mobile:   str
     email:    Optional[str] = None
     password: str
-    role:     str = "RESIDENT"
+    role:     str = "resident"
 
     @field_validator("mobile")
     @classmethod
     def validate_mobile(cls, v: str) -> str:
-        v = v.strip().replace(" ", "")
+        v = v.strip().replace(" ", "").replace("+91", "")
         if not re.fullmatch(r"[6-9]\d{9}", v):
             raise ValueError("Enter a valid 10-digit mobile number")
-        return v.upper()
+        return v  # return as-is, no upper()
 
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters")
-        return v.upper()
+        if len(v) < 6:
+            raise ValueError("Password must be at least 6 characters")
+        return v  # return as-is, no upper()
 
     @field_validator("role")
     @classmethod
     def validate_role(cls, v: str) -> str:
-        
-        if v.upper() not in ("RESIDENT", "MANAGEMENT", "ADMIN"):
+        if v.lower() not in ("resident", "management", "admin"):
             raise ValueError("Role must be resident, management, or admin")
-        return v.upper()
+        return v.lower()  # always store lowercase to match DB
 
 
 class UserUpdate(BaseModel):
@@ -56,4 +55,4 @@ class UserResponse(BaseModel):
 
 class UserListResponse(BaseModel):
     total: int
-    items: list[UserResponse]
+    items: List[UserResponse]
