@@ -20,7 +20,7 @@ def list_payments(
     db:      Session       = Depends(get_db),
     current_user: User     = Depends(get_current_user),
 ):
-    if current_user.role == UserRole.RESIDENT:
+    if current_user.role.upper() == 'RESIDENT':
         return payment_service.get_payments_for_resident(db, current_user.user_id)
     return payment_service.list_payments(db, status=status, bill_id=bill_id,
                                          skip=skip, limit=limit)

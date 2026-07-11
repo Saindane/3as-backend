@@ -40,14 +40,14 @@ def login(db: Session, payload: LoginRequest, ip: str) -> TokenResponse:
             detail="Account is inactive. Contact admin.",
         )
 
-    tokens = create_token_pair(user.user_id, user.role.value)
+    tokens = create_token_pair(user.user_id, user.role.upper())
     _log(db, user.user_id, "LOGIN_SUCCESS", entity="User", entity_id=user.user_id, ip=ip)
 
     return TokenResponse(
         **tokens,
         user_id=user.user_id,
         name=user.name,
-        role=user.role.value,
+        role=user.role.upper(),
     )
 
 
@@ -65,8 +65,8 @@ def refresh_tokens(db: Session, refresh_token: str) -> TokenResponse:
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
-    tokens = create_token_pair(user.user_id, user.role.value)
-    return TokenResponse(**tokens, user_id=user.user_id, name=user.name, role=user.role.value)
+    tokens = create_token_pair(user.user_id, user.role.upper())
+    return TokenResponse(**tokens, user_id=user.user_id, name=user.name, role=user.role.upper())
 
 
 def send_otp(db: Session, payload: OTPSendRequest) -> dict:

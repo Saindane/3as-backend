@@ -26,7 +26,7 @@ def list_bills(
     current_user: User         = Depends(get_current_user),
 ):
     # Residents only see their own bills
-    if current_user.role == UserRole.RESIDENT:
+    if current_user.role.upper() == 'RESIDENT':
         return bill_service.get_bills_for_resident(db, current_user.user_id)
 
     # Admin / management can filter freely
