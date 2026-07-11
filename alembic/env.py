@@ -3,6 +3,15 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
+# ── Load .env file explicitly ─────────────────────────────────────
+# This ensures DATABASE_URL is available whether running via
+# 'alembic upgrade head' or 'python -m alembic upgrade head' on Windows
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not installed — rely on environment variables
+
 # Load app models so Alembic can detect them
 from app.db.base import Base
 from app.models import user, otp, audit_log, property, bill, payment, complaint, notice, setting  # noqa: F401
@@ -10,7 +19,17 @@ from app.models import user, otp, audit_log, property, bill, payment, complaint,
 config = context.config
 
 # Override sqlalchemy.url from environment
-config.set_main_option("sqlalchemy.url", os.environ.get("DATABASE_URL", ""))
+db_url = os.environ.get("DATABASE_URL", "")
+if not db_url:
+    raise ValueError(
+        "DATABASE_URL is not set!\n"
+        "Make sure your .env file exists and contains:\n"
+        "  DATABASE_URL=postgresql://postgres:Admin@localhost:5432/as3_db\n"
+        "Or set it manually in PowerShell:\n"
+        '  $env:DATABASE_URL="postgresql://postgres:Admin@localhost:5432/as3_db"'
+    )
+
+config.set_main_option("sqlalchemy.url", db_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
