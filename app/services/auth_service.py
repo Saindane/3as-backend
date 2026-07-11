@@ -47,6 +47,7 @@ def login(db: Session, payload: LoginRequest, ip: str) -> TokenResponse:
         **tokens,
         user_id=user.user_id,
         name=user.name,
+        mobile=user.mobile,
         role=user.role.upper(),
     )
 
@@ -66,7 +67,7 @@ def refresh_tokens(db: Session, refresh_token: str) -> TokenResponse:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     tokens = create_token_pair(user.user_id, user.role.upper())
-    return TokenResponse(**tokens, user_id=user.user_id, name=user.name, role=user.role.upper())
+    return TokenResponse(**tokens, user_id=user.user_id, name=user.name, mobile=user.mobile, role=user.role.upper())
 
 
 def send_otp(db: Session, payload: OTPSendRequest) -> dict:

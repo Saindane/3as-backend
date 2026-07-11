@@ -17,12 +17,13 @@ class LoginRequest(BaseModel):
 
 
 class TokenResponse(BaseModel):
-    access_token: str
+    access_token:  str
     refresh_token: str
-    token_type: str = "bearer"
-    user_id: int
-    name: str
-    role: str
+    token_type:    str = "bearer"
+    user_id:       int
+    name:          str
+    mobile:        str = ""
+    role:          str
 
 
 class RefreshRequest(BaseModel):
