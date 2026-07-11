@@ -6,17 +6,17 @@ from app.db.base import Base
 
 
 class PaymentMode(str, enum.Enum):
-    UPI     = "UPI"
-    NEFT    = "NEFT"
-    RTGS    = "RTGS"
-    CASH    = "CASH"
-    CHEQUE  = "CHEQUE"
+    UPI     = "upi"
+    NEFT    = "neft"
+    RTGS    = "rtgs"
+    CASH    = "cash"
+    CHEQUE  = "cheque"
 
 
 class PaymentStatus(str, enum.Enum):
-    PENDING  = "PENDING"
-    VERIFIED = "VERIFIED"
-    REJECTED = "REJECTED"
+    PENDING  = "pending"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
 
 
 class Payment(Base):

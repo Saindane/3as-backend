@@ -189,7 +189,7 @@ def list_bills(
 ) -> dict:
     q = db.query(Bill)
     if property_id: q = q.filter(Bill.property_id == property_id)
-    if status:      q = q.filter(Bill.status == BillStatus(status.upper()))
+    if status:      q = q.filter(Bill.status == BillStatus(status.lower()))
     if month:       q = q.filter(Bill.month == month)
     if year:        q = q.filter(Bill.year  == year)
 

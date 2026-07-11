@@ -19,7 +19,7 @@ def create_user(db: Session, payload: UserCreate, created_by_id: int) -> User:
         mobile=payload.mobile,
         email=payload.email,
         password_hash=hash_password(payload.password),
-        role=UserRole(payload.role.upper()),
+        role=UserRole(payload.role.lower()),
         is_active=True,
     )
     db.add(user)
@@ -41,7 +41,7 @@ def list_users(db: Session, role: str = None, is_active: bool = None,
                skip: int = 0, limit: int = 50):
     q = db.query(User)
     if role:
-        q = q.filter(User.role == UserRole(role.upper()))
+        q = q.filter(User.role == UserRole(role.lower()))
     if is_active is not None:
         q = q.filter(User.is_active == is_active)
     total = q.count()
@@ -54,7 +54,7 @@ def update_user(db: Session, user_id: int, payload: UserUpdate, updated_by_id: i
     if payload.name      is not None: user.name      = payload.name
     if payload.email     is not None: user.email     = payload.email
     if payload.is_active is not None: user.is_active = payload.is_active
-    if payload.role      is not None: user.role      = UserRole(payload.role.upper())
+    if payload.role      is not None: user.role      = UserRole(payload.role.lower())
     db.commit()
     db.refresh(user)
     _log(db, updated_by_id, "USER_UPDATED", entity_id=user_id)

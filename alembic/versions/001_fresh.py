@@ -37,15 +37,15 @@ def upgrade() -> None:
         conn.execute(sa.text(f"DROP TYPE IF EXISTS {enum} CASCADE"))
 
     # ── Create enums ──────────────────────────────────────────────
-    conn.execute(sa.text("CREATE TYPE userrole AS ENUM ('RESIDENT','MANAGEMENT','ADMIN')"))
-    conn.execute(sa.text("CREATE TYPE propertytype AS ENUM ('RESIDENTIAL','COMMERCIAL')"))
-    conn.execute(sa.text("CREATE TYPE occupancytype AS ENUM ('OWNER','TENANT')"))
-    conn.execute(sa.text("CREATE TYPE billstatus AS ENUM ('PENDING','PAID','OVERDUE','WAIVED')"))
-    conn.execute(sa.text("CREATE TYPE paymentmode AS ENUM ('UPI','NEFT','RTGS','CASH','CHEQUE')"))
-    conn.execute(sa.text("CREATE TYPE paymentstatus AS ENUM ('PENDING','VERIFIED','REJECTED')"))
-    conn.execute(sa.text("CREATE TYPE complaintcategory AS ENUM ('ELECTRICAL','PLUMBING','CIVIL','SECURITY','HOUSEKEEPING','COMMON_AREA','OTHER')"))
-    conn.execute(sa.text("CREATE TYPE complaintpriority AS ENUM ('LOW','MEDIUM','HIGH')"))
-    conn.execute(sa.text("CREATE TYPE complaintstatus AS ENUM ('NEW','ASSIGNED','IN_PROGRESS','RESOLVED','CLOSED')"))
+    conn.execute(sa.text("CREATE TYPE userrole AS ENUM ('resident','management','admin')"))
+    conn.execute(sa.text("CREATE TYPE propertytype AS ENUM ('residential','commercial')"))
+    conn.execute(sa.text("CREATE TYPE occupancytype AS ENUM ('owner','tenant')"))
+    conn.execute(sa.text("CREATE TYPE billstatus AS ENUM ('pending','paid','overdue','waived')"))
+    conn.execute(sa.text("CREATE TYPE paymentmode AS ENUM ('upi','neft','rtgs','cash','cheque')"))
+    conn.execute(sa.text("CREATE TYPE paymentstatus AS ENUM ('pending','verified','rejected')"))
+    conn.execute(sa.text("CREATE TYPE complaintcategory AS ENUM ('electrical','plumbing','civil','security','housekeeping','common_area','other')"))
+    conn.execute(sa.text("CREATE TYPE complaintpriority AS ENUM ('low','medium','high')"))
+    conn.execute(sa.text("CREATE TYPE complaintstatus AS ENUM ('new','assigned','in_progress','resolved','closed')"))
 
     # ── Create tables ─────────────────────────────────────────────
     conn.execute(sa.text("""
@@ -55,7 +55,7 @@ def upgrade() -> None:
             mobile        VARCHAR(15)  NOT NULL UNIQUE,
             email         VARCHAR(150),
             password_hash VARCHAR(255) NOT NULL,
-            role          userrole     NOT NULL DEFAULT 'RESIDENT',
+            role          userrole     NOT NULL DEFAULT 'resident',
             is_active     BOOLEAN      NOT NULL DEFAULT true,
             fcm_token     VARCHAR(255),
             created_at    TIMESTAMPTZ DEFAULT now(),
@@ -96,7 +96,7 @@ def upgrade() -> None:
             property_id SERIAL PRIMARY KEY,
             unit_no     VARCHAR(20)  NOT NULL UNIQUE,
             floor       INTEGER      NOT NULL,
-            type        propertytype NOT NULL DEFAULT 'RESIDENTIAL',
+            type        propertytype NOT NULL DEFAULT 'residential',
             area_sqft   FLOAT,
             owner_id    INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
             created_at  TIMESTAMPTZ  DEFAULT now(),
@@ -110,7 +110,7 @@ def upgrade() -> None:
             occupant_id    SERIAL PRIMARY KEY,
             property_id    INTEGER NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
             user_id        INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-            occupancy_type occupancytype NOT NULL DEFAULT 'OWNER',
+            occupancy_type occupancytype NOT NULL DEFAULT 'owner',
             created_at     TIMESTAMPTZ DEFAULT now()
         )
     """))
@@ -125,7 +125,7 @@ def upgrade() -> None:
             penalty     FLOAT      NOT NULL DEFAULT 0,
             total       FLOAT      NOT NULL DEFAULT 0,
             due_date    DATE,
-            status      billstatus NOT NULL DEFAULT 'PENDING',
+            status      billstatus NOT NULL DEFAULT 'pending',
             created_at  TIMESTAMPTZ DEFAULT now(),
             updated_at  TIMESTAMPTZ DEFAULT now()
         )
@@ -141,8 +141,8 @@ def upgrade() -> None:
             amount      FLOAT         NOT NULL,
             utr         VARCHAR(100),
             screenshot  VARCHAR(500),
-            mode        paymentmode   NOT NULL DEFAULT 'UPI',
-            status      paymentstatus NOT NULL DEFAULT 'PENDING',
+            mode        paymentmode   NOT NULL DEFAULT 'upi',
+            status      paymentstatus NOT NULL DEFAULT 'pending',
             verified_by INTEGER       REFERENCES users(user_id) ON DELETE SET NULL,
             verified_at TIMESTAMPTZ,
             created_at  TIMESTAMPTZ   DEFAULT now()
@@ -156,8 +156,8 @@ def upgrade() -> None:
             raised_by    INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
             assigned_to  INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
             category     complaintcategory NOT NULL,
-            priority     complaintpriority NOT NULL DEFAULT 'MEDIUM',
-            status       complaintstatus   NOT NULL DEFAULT 'NEW',
+            priority     complaintpriority NOT NULL DEFAULT 'medium',
+            status       complaintstatus   NOT NULL DEFAULT 'new',
             title        VARCHAR(200) NOT NULL,
             description  TEXT,
             resolution   TEXT,
@@ -203,27 +203,27 @@ def upgrade() -> None:
     # ── Seed demo users (password: demo1234) ──────────────────────
     conn.execute(sa.text(f"""
         INSERT INTO users (name, mobile, email, password_hash, role, is_active) VALUES
-        ('Rajesh Kumar', '9876543210', 'rajesh@test.com', '{DEMO_HASH}', 'RESIDENT',   true),
-        ('Priya Menon',  '8765432109', 'priya@test.com',  '{DEMO_HASH}', 'MANAGEMENT', true),
-        ('Suresh Admin', '7654321098', 'suresh@test.com', '{DEMO_HASH}', 'ADMIN',      true)
+        ('Rajesh Kumar', '9876543210', 'rajesh@test.com', '{DEMO_HASH}', 'resident',   true),
+        ('Priya Menon',  '8765432109', 'priya@test.com',  '{DEMO_HASH}', 'management', true),
+        ('Suresh Admin', '7654321098', 'suresh@test.com', '{DEMO_HASH}', 'admin',      true)
     """))
 
     # ── Seed demo properties ──────────────────────────────────────
     conn.execute(sa.text("""
         INSERT INTO properties (unit_no, floor, type, area_sqft, owner_id)
-        SELECT '4B', 4, 'RESIDENTIAL', 1050, user_id
+        SELECT '4B', 4, 'residential', 1050, user_id
         FROM users WHERE mobile = '9876543210'
     """))
     conn.execute(sa.text("""
         INSERT INTO properties (unit_no, floor, type, area_sqft, owner_id)
-        SELECT '2A', 2, 'RESIDENTIAL', 850, user_id
+        SELECT '2A', 2, 'residential', 850, user_id
         FROM users WHERE mobile = '8765432109'
     """))
 
     # ── Seed occupant ─────────────────────────────────────────────
     conn.execute(sa.text("""
         INSERT INTO occupants (property_id, user_id, occupancy_type)
-        SELECT p.property_id, u.user_id, 'OWNER'
+        SELECT p.property_id, u.user_id, 'owner'
         FROM properties p, users u
         WHERE p.unit_no = '4B' AND u.mobile = '9876543210'
     """))
