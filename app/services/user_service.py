@@ -84,3 +84,12 @@ def _log(db: Session, user_id: int, action: str, entity: str = "User",
     db.add(AuditLog(user_id=user_id, action=action, entity=entity,
                     entity_id=entity_id, detail=detail))
     db.commit()
+
+
+def hard_delete_user(db: Session, user_id: int, deleted_by_id: int):
+    user = get_user(db, user_id)
+    db.delete(user)
+    db.commit()
+    _log(db, deleted_by_id, "USER_DELETED", entity_id=user_id,
+         detail=f"hard delete by user {deleted_by_id}")
+    return {"message": "User deleted permanently"}

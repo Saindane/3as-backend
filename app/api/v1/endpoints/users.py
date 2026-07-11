@@ -23,7 +23,7 @@ def list_users(
     return user_service.list_users(db, role=role, is_active=is_active, skip=skip, limit=limit)
 
 
-@router.post("", response_model=UserResponse, status_code=201, summary="Create user (Admin)")
+@router.post("", response_model=UserResponse, status_code=201, summary="Create user (Mgmt/Admin)")
 def create_user(
     payload: UserCreate,
     db:      Session = Depends(get_db),
@@ -49,20 +49,20 @@ def get_user(
     return user_service.get_user(db, user_id)
 
 
-@router.patch("/{user_id}", response_model=UserResponse, summary="Update user (Admin)")
+@router.patch("/{user_id}", response_model=UserResponse, summary="Update user (Mgmt/Admin)")
 def update_user(
     user_id: int,
     payload: UserUpdate,
     db:      Session = Depends(get_db),
-    actor:   User    = Depends(require_admin),
+    actor:   User    = Depends(require_management),  # management can edit users
 ):
     return user_service.update_user(db, user_id, payload, updated_by_id=actor.user_id)
 
 
-@router.delete("/{user_id}", summary="Deactivate user (Admin)")
-def deactivate_user(
+@router.delete("/{user_id}", summary="Delete user (Admin only)")
+def delete_user(
     user_id: int,
     db:      Session = Depends(get_db),
-    actor:   User    = Depends(require_admin),
+    actor:   User    = Depends(require_admin),  # only admin can hard delete
 ):
-    return user_service.delete_user(db, user_id, deleted_by_id=actor.user_id)
+    return user_service.hard_delete_user(db, user_id, deleted_by_id=actor.user_id)
