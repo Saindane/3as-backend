@@ -6,13 +6,13 @@ from app.db.base import Base
 
 
 class PropertyType(str, enum.Enum):
-    RESIDENTIAL = "residential"
-    COMMERCIAL  = "commercial"
+    RESIDENTIAL = "RESIDENTIAL"
+    COMMERCIAL  = "COMMERCIAL"
 
 
 class OccupancyType(str, enum.Enum):
-    OWNER  = "owner"
-    TENANT = "tenant"
+    OWNER  = "OWNER"
+    TENANT = "TENANT"
 
 
 class Property(Base):
