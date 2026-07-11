@@ -1,8 +1,8 @@
-"""Fresh migration - all tables with correct enum values
+"""Fresh migration - all tables, correct lowercase enums, full seed data
 
 Revision ID: 001_fresh
 Revises:
-Create Date: 2025-07-05
+Create Date: 2025-07-11
 """
 from typing import Sequence, Union
 from alembic import op
@@ -13,13 +13,14 @@ down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+# bcrypt hash for 'demo1234'
 DEMO_HASH = "$2b$12$EVKYF15wY90sP/CzblpKxubht3q6Cfg0EIZ3nEUR6xCpjqsrXmXuO"
 
 
 def upgrade() -> None:
     conn = op.get_bind()
 
-    # ── Drop everything first (clean slate) ───────────────────────
+    # ── 1. Drop all tables ────────────────────────────────────────
     conn.execute(sa.text("DROP TABLE IF EXISTS settings    CASCADE"))
     conn.execute(sa.text("DROP TABLE IF EXISTS notices     CASCADE"))
     conn.execute(sa.text("DROP TABLE IF EXISTS complaints  CASCADE"))
@@ -30,36 +31,79 @@ def upgrade() -> None:
     conn.execute(sa.text("DROP TABLE IF EXISTS audit_logs  CASCADE"))
     conn.execute(sa.text("DROP TABLE IF EXISTS otp_records CASCADE"))
     conn.execute(sa.text("DROP TABLE IF EXISTS users       CASCADE"))
-    # Drop enums
-    for enum in ["userrole","propertytype","occupancytype","billstatus",
-                 "paymentmode","paymentstatus","complaintcategory",
-                 "complaintpriority","complaintstatus"]:
-        conn.execute(sa.text(f"DROP TYPE IF EXISTS {enum} CASCADE"))
 
-    # ── Create enums ──────────────────────────────────────────────
-    conn.execute(sa.text("CREATE TYPE userrole AS ENUM ('resident','management','admin')"))
-    conn.execute(sa.text("CREATE TYPE propertytype AS ENUM ('residential','commercial')"))
-    conn.execute(sa.text("CREATE TYPE occupancytype AS ENUM ('owner','tenant')"))
-    conn.execute(sa.text("CREATE TYPE billstatus AS ENUM ('pending','paid','overdue','waived')"))
-    conn.execute(sa.text("CREATE TYPE paymentmode AS ENUM ('upi','neft','rtgs','cash','cheque')"))
-    conn.execute(sa.text("CREATE TYPE paymentstatus AS ENUM ('pending','verified','rejected')"))
-    conn.execute(sa.text("CREATE TYPE complaintcategory AS ENUM ('electrical','plumbing','civil','security','housekeeping','common_area','other')"))
-    conn.execute(sa.text("CREATE TYPE complaintpriority AS ENUM ('low','medium','high')"))
-    conn.execute(sa.text("CREATE TYPE complaintstatus AS ENUM ('new','assigned','in_progress','resolved','closed')"))
+    # ── 2. Drop all custom enum types ────────────────────────────
+    conn.execute(sa.text("DROP TYPE IF EXISTS userrole          CASCADE"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS propertytype      CASCADE"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS occupancytype     CASCADE"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS billstatus        CASCADE"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS paymentmode       CASCADE"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS paymentstatus     CASCADE"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS complaintcategory CASCADE"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS complaintpriority CASCADE"))
+    conn.execute(sa.text("DROP TYPE IF EXISTS complaintstatus   CASCADE"))
 
-    # ── Create tables ─────────────────────────────────────────────
+    # ── 3. Create enum types (ALL LOWERCASE) ─────────────────────
+    conn.execute(sa.text("""
+        CREATE TYPE userrole AS ENUM (
+            'resident', 'management', 'admin'
+        )
+    """))
+    conn.execute(sa.text("""
+        CREATE TYPE propertytype AS ENUM (
+            'residential', 'commercial'
+        )
+    """))
+    conn.execute(sa.text("""
+        CREATE TYPE occupancytype AS ENUM (
+            'owner', 'tenant'
+        )
+    """))
+    conn.execute(sa.text("""
+        CREATE TYPE billstatus AS ENUM (
+            'pending', 'paid', 'overdue', 'waived'
+        )
+    """))
+    conn.execute(sa.text("""
+        CREATE TYPE paymentmode AS ENUM (
+            'upi', 'neft', 'rtgs', 'cash', 'cheque'
+        )
+    """))
+    conn.execute(sa.text("""
+        CREATE TYPE paymentstatus AS ENUM (
+            'pending', 'verified', 'rejected'
+        )
+    """))
+    conn.execute(sa.text("""
+        CREATE TYPE complaintcategory AS ENUM (
+            'electrical', 'plumbing', 'civil', 'security',
+            'housekeeping', 'common_area', 'other'
+        )
+    """))
+    conn.execute(sa.text("""
+        CREATE TYPE complaintpriority AS ENUM (
+            'low', 'medium', 'high'
+        )
+    """))
+    conn.execute(sa.text("""
+        CREATE TYPE complaintstatus AS ENUM (
+            'new', 'assigned', 'in_progress', 'resolved', 'closed'
+        )
+    """))
+
+    # ── 4. Create tables ──────────────────────────────────────────
     conn.execute(sa.text("""
         CREATE TABLE users (
             user_id       SERIAL PRIMARY KEY,
-            name          VARCHAR(100) NOT NULL,
-            mobile        VARCHAR(15)  NOT NULL UNIQUE,
+            name          VARCHAR(100)    NOT NULL,
+            mobile        VARCHAR(15)     NOT NULL UNIQUE,
             email         VARCHAR(150),
-            password_hash VARCHAR(255) NOT NULL,
-            role          userrole     NOT NULL DEFAULT 'resident',
-            is_active     BOOLEAN      NOT NULL DEFAULT true,
+            password_hash VARCHAR(255)    NOT NULL,
+            role          userrole        NOT NULL DEFAULT 'resident',
+            is_active     BOOLEAN         NOT NULL DEFAULT TRUE,
             fcm_token     VARCHAR(255),
-            created_at    TIMESTAMPTZ DEFAULT now(),
-            updated_at    TIMESTAMPTZ DEFAULT now()
+            created_at    TIMESTAMPTZ     DEFAULT NOW(),
+            updated_at    TIMESTAMPTZ     DEFAULT NOW()
         )
     """))
     conn.execute(sa.text("CREATE INDEX ix_users_user_id ON users(user_id)"))
@@ -71,9 +115,9 @@ def upgrade() -> None:
             mobile     VARCHAR(15)  NOT NULL,
             otp_hash   VARCHAR(255) NOT NULL,
             purpose    VARCHAR(30)  NOT NULL,
-            is_used    BOOLEAN      NOT NULL DEFAULT false,
+            is_used    BOOLEAN      NOT NULL DEFAULT FALSE,
             expires_at TIMESTAMPTZ  NOT NULL,
-            created_at TIMESTAMPTZ  DEFAULT now()
+            created_at TIMESTAMPTZ  DEFAULT NOW()
         )
     """))
     conn.execute(sa.text("CREATE INDEX ix_otp_records_mobile ON otp_records(mobile)"))
@@ -87,7 +131,7 @@ def upgrade() -> None:
             entity_id  INTEGER,
             detail     TEXT,
             ip_address VARCHAR(45),
-            created_at TIMESTAMPTZ DEFAULT now()
+            created_at TIMESTAMPTZ DEFAULT NOW()
         )
     """))
 
@@ -99,8 +143,8 @@ def upgrade() -> None:
             type        propertytype NOT NULL DEFAULT 'residential',
             area_sqft   FLOAT,
             owner_id    INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
-            created_at  TIMESTAMPTZ  DEFAULT now(),
-            updated_at  TIMESTAMPTZ  DEFAULT now()
+            created_at  TIMESTAMPTZ  DEFAULT NOW(),
+            updated_at  TIMESTAMPTZ  DEFAULT NOW()
         )
     """))
     conn.execute(sa.text("CREATE INDEX ix_properties_property_id ON properties(property_id)"))
@@ -108,17 +152,17 @@ def upgrade() -> None:
     conn.execute(sa.text("""
         CREATE TABLE occupants (
             occupant_id    SERIAL PRIMARY KEY,
-            property_id    INTEGER NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
-            user_id        INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+            property_id    INTEGER       NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+            user_id        INTEGER       NOT NULL REFERENCES users(user_id)          ON DELETE CASCADE,
             occupancy_type occupancytype NOT NULL DEFAULT 'owner',
-            created_at     TIMESTAMPTZ DEFAULT now()
+            created_at     TIMESTAMPTZ   DEFAULT NOW()
         )
     """))
 
     conn.execute(sa.text("""
         CREATE TABLE bills (
             bill_id     SERIAL PRIMARY KEY,
-            property_id INTEGER REFERENCES properties(property_id) ON DELETE CASCADE,
+            property_id INTEGER    REFERENCES properties(property_id) ON DELETE CASCADE,
             month       INTEGER    NOT NULL,
             year        INTEGER    NOT NULL,
             maintenance FLOAT      NOT NULL DEFAULT 0,
@@ -126,8 +170,8 @@ def upgrade() -> None:
             total       FLOAT      NOT NULL DEFAULT 0,
             due_date    DATE,
             status      billstatus NOT NULL DEFAULT 'pending',
-            created_at  TIMESTAMPTZ DEFAULT now(),
-            updated_at  TIMESTAMPTZ DEFAULT now()
+            created_at  TIMESTAMPTZ DEFAULT NOW(),
+            updated_at  TIMESTAMPTZ DEFAULT NOW()
         )
     """))
     conn.execute(sa.text("CREATE INDEX ix_bills_property_id ON bills(property_id)"))
@@ -137,32 +181,32 @@ def upgrade() -> None:
     conn.execute(sa.text("""
         CREATE TABLE payments (
             payment_id  SERIAL PRIMARY KEY,
-            bill_id     INTEGER REFERENCES bills(bill_id) ON DELETE CASCADE,
+            bill_id     INTEGER       REFERENCES bills(bill_id)  ON DELETE CASCADE,
             amount      FLOAT         NOT NULL,
             utr         VARCHAR(100),
             screenshot  VARCHAR(500),
             mode        paymentmode   NOT NULL DEFAULT 'upi',
             status      paymentstatus NOT NULL DEFAULT 'pending',
-            verified_by INTEGER       REFERENCES users(user_id) ON DELETE SET NULL,
+            verified_by INTEGER       REFERENCES users(user_id)  ON DELETE SET NULL,
             verified_at TIMESTAMPTZ,
-            created_at  TIMESTAMPTZ   DEFAULT now()
+            created_at  TIMESTAMPTZ   DEFAULT NOW()
         )
     """))
 
     conn.execute(sa.text("""
         CREATE TABLE complaints (
             complaint_id SERIAL PRIMARY KEY,
-            property_id  INTEGER REFERENCES properties(property_id) ON DELETE SET NULL,
-            raised_by    INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
-            assigned_to  INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
+            property_id  INTEGER           REFERENCES properties(property_id) ON DELETE SET NULL,
+            raised_by    INTEGER           REFERENCES users(user_id)          ON DELETE SET NULL,
+            assigned_to  INTEGER           REFERENCES users(user_id)          ON DELETE SET NULL,
             category     complaintcategory NOT NULL,
             priority     complaintpriority NOT NULL DEFAULT 'medium',
             status       complaintstatus   NOT NULL DEFAULT 'new',
-            title        VARCHAR(200) NOT NULL,
+            title        VARCHAR(200)      NOT NULL,
             description  TEXT,
             resolution   TEXT,
-            created_at   TIMESTAMPTZ DEFAULT now(),
-            updated_at   TIMESTAMPTZ DEFAULT now()
+            created_at   TIMESTAMPTZ DEFAULT NOW(),
+            updated_at   TIMESTAMPTZ DEFAULT NOW()
         )
     """))
 
@@ -173,10 +217,10 @@ def upgrade() -> None:
             body       TEXT         NOT NULL,
             category   VARCHAR(50),
             priority   VARCHAR(20)  NOT NULL DEFAULT 'normal',
-            created_by INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
-            is_active  BOOLEAN      NOT NULL DEFAULT true,
-            created_at TIMESTAMPTZ  DEFAULT now(),
-            updated_at TIMESTAMPTZ  DEFAULT now()
+            created_by INTEGER      REFERENCES users(user_id) ON DELETE SET NULL,
+            is_active  BOOLEAN      NOT NULL DEFAULT TRUE,
+            created_at TIMESTAMPTZ  DEFAULT NOW(),
+            updated_at TIMESTAMPTZ  DEFAULT NOW()
         )
     """))
 
@@ -187,8 +231,8 @@ def upgrade() -> None:
         )
     """))
 
-    # ── Seed settings ─────────────────────────────────────────────
-    conn.execute(sa.text(f"""
+    # ── 5. Seed default settings ──────────────────────────────────
+    conn.execute(sa.text("""
         INSERT INTO settings (key, value) VALUES
         ('penalty_daily_pct',  '0.05'),
         ('upi_id',             '3ascomplex@upi'),
@@ -200,15 +244,19 @@ def upgrade() -> None:
         ('sms_enabled',        'false')
     """))
 
-    # ── Seed demo users (password: demo1234) ──────────────────────
+    # ── 6. Seed demo users (password: demo1234) ───────────────────
     conn.execute(sa.text(f"""
-        INSERT INTO users (name, mobile, email, password_hash, role, is_active) VALUES
-        ('Rajesh Kumar', '9876543210', 'rajesh@test.com', '{DEMO_HASH}', 'resident',   true),
-        ('Priya Menon',  '8765432109', 'priya@test.com',  '{DEMO_HASH}', 'management', true),
-        ('Suresh Admin', '7654321098', 'suresh@test.com', '{DEMO_HASH}', 'admin',      true)
+        INSERT INTO users (name, mobile, email, password_hash, role, is_active)
+        VALUES
+        ('Rajesh Kumar', '9876543210', 'rajesh@test.com',
+         '{DEMO_HASH}', 'resident', TRUE),
+        ('Priya Menon',  '8765432109', 'priya@test.com',
+         '{DEMO_HASH}', 'management', TRUE),
+        ('Suresh Admin', '7654321098', 'suresh@test.com',
+         '{DEMO_HASH}', 'admin', TRUE)
     """))
 
-    # ── Seed demo properties ──────────────────────────────────────
+    # ── 7. Seed demo properties ───────────────────────────────────
     conn.execute(sa.text("""
         INSERT INTO properties (unit_no, floor, type, area_sqft, owner_id)
         SELECT '4B', 4, 'residential', 1050, user_id
@@ -220,7 +268,7 @@ def upgrade() -> None:
         FROM users WHERE mobile = '8765432109'
     """))
 
-    # ── Seed occupant ─────────────────────────────────────────────
+    # ── 8. Seed occupant ──────────────────────────────────────────
     conn.execute(sa.text("""
         INSERT INTO occupants (property_id, user_id, occupancy_type)
         SELECT p.property_id, u.user_id, 'owner'
@@ -231,10 +279,11 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     conn = op.get_bind()
-    for tbl in ["settings","notices","complaints","payments","bills",
-                "occupants","properties","audit_logs","otp_records","users"]:
+    for tbl in ["settings", "notices", "complaints", "payments",
+                "bills", "occupants", "properties",
+                "audit_logs", "otp_records", "users"]:
         conn.execute(sa.text(f"DROP TABLE IF EXISTS {tbl} CASCADE"))
-    for enum in ["userrole","propertytype","occupancytype","billstatus",
-                 "paymentmode","paymentstatus","complaintcategory",
-                 "complaintpriority","complaintstatus"]:
+    for enum in ["userrole", "propertytype", "occupancytype",
+                 "billstatus", "paymentmode", "paymentstatus",
+                 "complaintcategory", "complaintpriority", "complaintstatus"]:
         conn.execute(sa.text(f"DROP TYPE IF EXISTS {enum} CASCADE"))
