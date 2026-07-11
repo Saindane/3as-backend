@@ -30,8 +30,6 @@ def upgrade() -> None:
     conn.execute(sa.text("DROP TABLE IF EXISTS audit_logs  CASCADE"))
     conn.execute(sa.text("DROP TABLE IF EXISTS otp_records CASCADE"))
     conn.execute(sa.text("DROP TABLE IF EXISTS users       CASCADE"))
-    conn.execute(sa.text("DROP TABLE IF EXISTS alembic_version CASCADE"))
-
     # Drop enums
     for enum in ["userrole","propertytype","occupancytype","billstatus",
                  "paymentmode","paymentstatus","complaintcategory",
