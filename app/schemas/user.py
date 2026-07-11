@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     mobile:   str
     email:    Optional[str] = None
     password: str
-    role:     str = "resident"
+    role:     str = "RESIDENT"
 
     @field_validator("mobile")
     @classmethod
@@ -17,21 +17,22 @@ class UserCreate(BaseModel):
         v = v.strip().replace(" ", "").replace("+91", "")
         if not re.fullmatch(r"[6-9]\d{9}", v):
             raise ValueError("Enter a valid 10-digit mobile number")
-        return v  # return as-is, no upper()
+        return v
 
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
         if len(v) < 6:
             raise ValueError("Password must be at least 6 characters")
-        return v  # return as-is, no upper()
+        return v  # never modify password
 
     @field_validator("role")
     @classmethod
     def validate_role(cls, v: str) -> str:
-        if v.lower() not in ("resident", "management", "admin"):
+        v = v.upper()
+        if v not in ("RESIDENT", "MANAGEMENT", "ADMIN"):
             raise ValueError("Role must be resident, management, or admin")
-        return v.lower()  # always store lowercase to match DB
+        return v  # return UPPERCASE to match DB enum
 
 
 class UserUpdate(BaseModel):
