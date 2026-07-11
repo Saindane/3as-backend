@@ -29,7 +29,7 @@ def list_properties(
 def create_property(
     payload: PropertyCreate,
     db:      Session = Depends(get_db),
-    actor:   User    = Depends(require_admin),
+    actor:   User    = Depends(require_management),
 ):
     return property_service.create_property(db, payload, created_by_id=actor.user_id)
 
