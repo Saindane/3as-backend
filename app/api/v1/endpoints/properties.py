@@ -70,11 +70,11 @@ def update_property(
                                             updated_by_id=actor.user_id)
 
 
-@router.delete("/{property_id}", summary="Delete property (Admin)")
+@router.delete("/{property_id}", summary="Delete property (Mgmt/Admin)")
 def delete_property(
     property_id: int,
     db:          Session = Depends(get_db),
-    actor:       User    = Depends(require_admin),
+    actor:       User    = Depends(require_management),
 ):
     return property_service.delete_property(db, property_id, deleted_by_id=actor.user_id)
 
