@@ -6,7 +6,7 @@ from datetime import datetime
 class PropertyCreate(BaseModel):
     unit_no:   str
     floor:     int
-    type:      str = "residential"
+    type:      str = "RESIDENTIAL"
     area_sqft: Optional[float] = None
     owner_id:  Optional[int]   = None
 
@@ -45,7 +45,7 @@ class PropertyListResponse(BaseModel):
 
 class OccupantCreate(BaseModel):
     user_id:        int
-    occupancy_type: str = "owner"
+    occupancy_type: str = "OWNER"
 
 
 class OccupantResponse(BaseModel):

@@ -14,7 +14,7 @@ def create_property(db: Session, payload: PropertyCreate, created_by_id: int) ->
     prop = Property(
         unit_no=payload.unit_no,
         floor=payload.floor,
-        type=PropertyType(payload.type.lower()),
+        type=PropertyType(payload.type.upper()),
         area_sqft=payload.area_sqft,
         owner_id=payload.owner_id,
     )
