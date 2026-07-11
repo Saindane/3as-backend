@@ -27,7 +27,7 @@ def list_users(
 def create_user(
     payload: UserCreate,
     db:      Session = Depends(get_db),
-    actor:   User    = Depends(require_admin),
+    actor:   User    = Depends(require_management),
 ):
     return user_service.create_user(db, payload, created_by_id=actor.user_id)
 
