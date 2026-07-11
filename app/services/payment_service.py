@@ -21,7 +21,7 @@ def submit_payment(db: Session, payload: PaymentSubmitRequest, user_id: int) -> 
         amount=payload.amount,
         utr=payload.utr,
         screenshot=payload.screenshot,
-        mode=PaymentMode(payload.mode.lower()),
+        mode=PaymentMode(payload.mode.upper()),
         status=PaymentStatus.PENDING,
     )
     db.add(payment)
@@ -71,7 +71,7 @@ def list_payments(
 ) -> dict:
     q = db.query(Payment)
     if status:
-        q = q.filter(Payment.status == PaymentStatus(status.lower()))
+        q = q.filter(Payment.status == PaymentStatus(status.upper()))
     if bill_id:
         q = q.filter(Payment.bill_id == bill_id)
 

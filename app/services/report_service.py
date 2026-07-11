@@ -26,15 +26,15 @@ def collection_report(db: Session, month: int, year: int) -> dict:
             "due_date":    b.due_date,
         })
 
-    paid_total    = sum(b["total"] for b in result if b["status"] == "paid")
-    pending_total = sum(b["total"] for b in result if b["status"] in ("pending", "overdue"))
+    paid_total    = sum(b["total"] for b in result if b["status"] == "PAID")
+    pending_total = sum(b["total"] for b in result if b["status"] in ("PENDING", "OVERDUE"))
 
     return {
         "month": month, "year": year,
         "total_bills":     len(result),
-        "paid_count":      sum(1 for b in result if b["status"] == "paid"),
-        "pending_count":   sum(1 for b in result if b["status"] in ("pending", "overdue")),
-        "overdue_count":   sum(1 for b in result if b["status"] == "overdue"),
+        "paid_count":      sum(1 for b in result if b["status"] == "PAID"),
+        "pending_count":   sum(1 for b in result if b["status"] in ("PENDING", "OVERDUE")),
+        "overdue_count":   sum(1 for b in result if b["status"] == "OVERDUE"),
         "paid_amount":     round(paid_total, 2),
         "pending_amount":  round(pending_total, 2),
         "collection_pct":  round(paid_total / (paid_total + pending_total) * 100, 1)
