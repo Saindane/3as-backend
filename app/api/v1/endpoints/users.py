@@ -40,6 +40,30 @@ def get_me(
     return user_service.get_user(db, current_user.user_id)
 
 
+@router.post("/me/change-password", summary="Change own password")
+def change_password(
+    payload:      dict,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
+):
+    import bcrypt
+    current_pw = payload.get("current_password", "")
+    new_pw     = payload.get("new_password", "")
+
+    if len(new_pw) < 6:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400,
+            detail="New password must be at least 6 characters")
+
+    # Verify current password
+    if not bcrypt.checkpw(current_pw.encode(), current_user.password_hash.encode()):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400,
+            detail="Current password is incorrect")
+
+    return user_service.change_password(db, current_user.user_id, new_pw)
+
+
 @router.get("/{user_id}", response_model=UserResponse, summary="Get user by ID (Admin/Mgmt)")
 def get_user(
     user_id: int,
