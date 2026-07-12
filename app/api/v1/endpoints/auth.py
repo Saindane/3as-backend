@@ -62,6 +62,24 @@ def update_fcm_token(
     return MessageResponse(message=result["message"])
 
 
+@router.get("/branding", summary="Get app branding — public, no auth required")
+def get_branding(db: Session = Depends(get_db)):
+    """
+    Returns app name, tagline, logo URL and primary color.
+    Called on splash screen before login — no token needed.
+    """
+    from app.models.setting import Setting
+    keys = ['app_name', 'app_tagline', 'app_logo_url', 'app_primary_color']
+    settings = db.query(Setting).filter(Setting.key.in_(keys)).all()
+    data = {s.key: s.value for s in settings}
+    return {
+        "app_name":    data.get("app_name",    "3As Complex"),
+        "app_tagline": data.get("app_tagline", "Maintenance Management System"),
+        "app_logo_url": data.get("app_logo_url", ""),
+        "app_primary_color": data.get("app_primary_color", "#2563EB"),
+    }
+
+
 @router.get("/me", summary="Get current user info")
 def get_me(current_user: User = Depends(get_current_user)):
     return {

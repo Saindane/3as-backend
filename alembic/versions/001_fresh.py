@@ -241,7 +241,11 @@ def upgrade() -> None:
         ('maintenance_amount', '2000'),
         ('due_day_of_month',   '10'),
         ('fcm_enabled',        'true'),
-        ('sms_enabled',        'false')
+        ('sms_enabled',        'false'),
+        ('app_name',            '3As Complex'),
+        ('app_tagline',         'Maintenance Management System'),
+        ('app_logo_url',        ''),
+        ('app_primary_color',   '#2563EB')
     """))
 
     # ── 6. Seed demo users (password: demo1234) ───────────────────
