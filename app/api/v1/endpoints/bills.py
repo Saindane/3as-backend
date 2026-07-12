@@ -36,6 +36,15 @@ def list_bills(
     )
 
 
+@router.get("/my", summary="Get my bills (Resident only)")
+def get_my_bills(
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
+):
+    """Dedicated endpoint for residents to get their own bills only."""
+    return bill_service.get_bills_for_resident(db, current_user.user_id)
+
+
 @router.post(
     "/generate",
     response_model=GenerationResult,
