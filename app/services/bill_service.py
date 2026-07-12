@@ -208,9 +208,9 @@ def list_bills(
             "maintenance": bill.maintenance,
             "penalty":     bill.penalty,
             "total":       bill.total,
-            "due_date":    bill.due_date,
+            "due_date":    bill.due_date.isoformat() if bill.due_date else None,
             "status":      bill.status.value,
-            "created_at":  bill.created_at,
+            "created_at":  bill.created_at.isoformat() if bill.created_at else None,
         }
         result.append(d)
 
