@@ -72,10 +72,11 @@ def get_branding(db: Session = Depends(get_db)):
     keys = ['app_name', 'app_tagline', 'app_logo_url', 'app_primary_color']
     settings = db.query(Setting).filter(Setting.key.in_(keys)).all()
     data = {s.key: s.value for s in settings}
+    logo = data.get("app_logo_url", "") or ""
     return {
-        "app_name":    data.get("app_name",    "3As Complex"),
-        "app_tagline": data.get("app_tagline", "Maintenance Management System"),
-        "app_logo_url": data.get("app_logo_url", ""),
+        "app_name":          data.get("app_name",    "3As Complex"),
+        "app_tagline":       data.get("app_tagline", "Maintenance Management System"),
+        "app_logo_url":      logo,   # base64 data URI or empty string
         "app_primary_color": data.get("app_primary_color", "#2563EB"),
     }
 
