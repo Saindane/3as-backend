@@ -7,8 +7,16 @@ class PaymentSubmitRequest(BaseModel):
     bill_id:    int
     amount:     float
     utr:        Optional[str] = None
-    mode:       str = "upi"
+    mode:       str = "UPI"
     screenshot: Optional[str] = None   # S3 URL after upload
+
+    @field_validator("mode")
+    @classmethod
+    def validate_mode(cls, v: str) -> str:
+        v = v.upper()
+        if v not in ("UPI", "NEFT", "RTGS", "CASH", "CHEQUE"):
+            raise ValueError("Invalid payment mode")
+        return v
 
 
 class PaymentVerifyRequest(BaseModel):
