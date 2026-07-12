@@ -54,10 +54,16 @@ def update_notice(
     return notice_service.update_notice(db, notice_id, payload, actor.user_id)
 
 
-@router.delete("/{notice_id}", summary="Deactivate notice (Admin)")
+@router.delete("/{notice_id}", summary="Deactivate notice (Creator or Admin)")
 def delete_notice(
     notice_id: int,
     db:        Session = Depends(get_db),
-    actor:     User    = Depends(require_admin),
+    actor:     User    = Depends(require_management),
 ):
+    # Only admin or the creator can delete
+    notice = notice_service.get_notice(db, notice_id)
+    if actor.role.upper() != 'ADMIN' and notice.get('created_by') != actor.user_id:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403,
+            detail="Only the notice creator or admin can delete this notice")
     return notice_service.delete_notice(db, notice_id, actor.user_id)
