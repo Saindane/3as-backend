@@ -39,6 +39,9 @@ def get_my_property(
     db:           Session = Depends(get_db),
     current_user: User    = Depends(get_current_user),
 ):
+    # Auto-apply penalties when resident loads their dashboard
+    from app.services.bill_service import apply_penalties_for_all
+    apply_penalties_for_all(db)
     return property_service.get_resident_property(db, current_user.user_id)
 
 
