@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api.v1.router import api_router
-from app.core.scheduler import start_scheduler, stop_scheduler
 
 import app.models  # noqa: F401 — registers all SQLAlchemy mappers
 
@@ -33,12 +32,10 @@ app.include_router(api_router)
 # ── Scheduler ─────────────────────────────────────────────────────
 @app.on_event("startup")
 async def on_startup():
-    start_scheduler()
 
 
 @app.on_event("shutdown")
 async def on_shutdown():
-    stop_scheduler()
 
 
 # ── Health ────────────────────────────────────────────────────────

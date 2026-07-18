@@ -187,6 +187,9 @@ def list_bills(
     skip: int = 0,
     limit: int = 50,
 ) -> dict:
+    # Auto-apply overdue status before listing
+    apply_penalties_for_all(db)
+
     q = db.query(Bill)
     if property_id: q = q.filter(Bill.property_id == property_id)
     if status:      q = q.filter(Bill.status == BillStatus(status.upper()))
@@ -225,11 +228,17 @@ def get_bill(db: Session, bill_id: int) -> Bill:
 
 
 def get_bills_for_resident(db: Session, user_id: int) -> dict:
-    """Get all bills for the property linked to this resident."""
+    """Get all bills for the property linked to this resident.
+    Also auto-applies overdue status for bills past due_date.
+    """
     from app.models.property import Occupant
     occupant = db.query(Occupant).filter(Occupant.user_id == user_id).first()
     if not occupant:
         return {"total": 0, "items": []}
+
+    # Auto-apply overdue status without waiting for nightly cron
+    apply_penalties_for_all(db)
+
     return list_bills(db, property_id=occupant.property_id)
 
 
