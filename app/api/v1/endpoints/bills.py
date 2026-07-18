@@ -45,6 +45,17 @@ def get_my_bills(
     return bill_service.get_bills_for_resident(db, current_user.user_id)
 
 
+@router.post("/apply-penalties", summary="Manually apply penalties now (Admin)")
+def apply_penalties_now(
+    db:    Session = Depends(get_db),
+    actor: User    = Depends(require_admin),
+):
+    """Manually trigger the nightly penalty job. Useful for testing."""
+    from app.services.bill_service import apply_penalties_for_all
+    updated = apply_penalties_for_all(db)
+    return {"message": f"Penalties applied to {updated} bills"}
+
+
 @router.post(
     "/generate",
     response_model=GenerationResult,
