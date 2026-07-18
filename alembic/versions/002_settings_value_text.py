@@ -7,7 +7,7 @@ Create Date: 2026-07-18
 from alembic import op
 
 revision = '002_settings_value_text'
-down_revision = None
+down_revision = '001_fresh'
 branch_labels = None
 depends_on = None
 
