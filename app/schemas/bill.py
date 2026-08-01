@@ -4,11 +4,12 @@ from datetime import date, datetime
 
 
 class BillGenerateRequest(BaseModel):
-    month:       int
-    year:        int
-    maintenance: float
-    due_date:    date
+    month:           int
+    year:            int
+    maintenance:     float
+    due_date:        date
     include_penalty: bool = True
+    property_id:     Optional[int] = None  # None = all units, int = specific unit
 
     @field_validator("month")
     @classmethod

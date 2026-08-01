@@ -53,9 +53,20 @@ def generate_bills(
 ) -> GenerationResult:
     """
     Generate one bill per active property for the given month/year.
+    If payload.property_id is set, generates only for that property.
     Skips properties that already have a bill for that period.
     """
-    properties = db.query(Property).all()
+    if payload.property_id:
+        # Specific unit mode
+        prop = db.query(Property).filter(
+            Property.property_id == payload.property_id).first()
+        if not prop:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Property not found")
+        properties = [prop]
+    else:
+        # All units mode
+        properties = db.query(Property).all()
     generated = 0
     skipped   = 0
     details: List[str] = []
