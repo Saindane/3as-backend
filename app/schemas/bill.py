@@ -15,13 +15,6 @@ class BillGenerateRequest(BaseModel):
     @classmethod
     def validate_month(cls, v: int) -> int:
         if not 1 <= v <= 12:
-            raise ValueError("Month must be between 1 and 12")
-        return v
-
-    @field_validator("month")
-    @classmethod
-    def validate_month(cls, v: int) -> int:
-        if not 1 <= v <= 12:
             raise ValueError("Month must be 1–12")
         return v
 
