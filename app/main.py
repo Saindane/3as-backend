@@ -32,10 +32,12 @@ app.include_router(api_router)
 # ── Scheduler ─────────────────────────────────────────────────────
 @app.on_event("startup")
 async def on_startup():
+    pass
 
 
 @app.on_event("shutdown")
 async def on_shutdown():
+    pass
 
 
 # ── Health ────────────────────────────────────────────────────────
