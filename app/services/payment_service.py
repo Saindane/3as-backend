@@ -126,8 +126,8 @@ def _to_dict(p: Payment) -> dict:
         "mode":        p.mode.value,
         "status":      p.status.value,
         "verified_by": p.verified_by,
-        "verified_at": p.verified_at,
-        "created_at":  p.created_at,
+        "verified_at": p.verified_at.isoformat() if p.verified_at else None,
+        "created_at":  p.created_at.isoformat() if p.created_at else None,
         "unit_no":     unit_no,
     }
 
