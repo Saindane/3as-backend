@@ -91,7 +91,7 @@ def admin_reset_password(
     db:      Session = Depends(get_db),
     actor:   User    = Depends(require_admin),
 ):
-    from app.core.security import get_password_hash
+    from app.core.security import hash_password
     new_password = (payload.get("new_password") or "").strip()
     if len(new_password) < 6:
         raise HTTPException(status_code=400,
@@ -99,7 +99,7 @@ def admin_reset_password(
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user.password_hash = get_password_hash(new_password)
+    user.password_hash = hash_password(new_password)
     db.commit()
     _log(db, actor.user_id, "PASSWORD_RESET",
          entity="User", entity_id=user_id,
