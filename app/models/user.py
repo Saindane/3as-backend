@@ -20,7 +20,8 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     # Use String instead of Enum — avoids SQLAlchemy/PostgreSQL enum mismatch
     role          = Column(String(20), nullable=False, default="RESIDENT")
-    is_active     = Column(Boolean, default=True, nullable=False)
+    is_active              = Column(Boolean, default=True,  nullable=False)
+    must_change_password   = Column(Boolean, default=False, nullable=False)
     fcm_token     = Column(String(255), nullable=True)
     created_at    = Column(DateTime(timezone=True),
                            default=lambda: datetime.now(timezone.utc))

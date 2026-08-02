@@ -83,6 +83,30 @@ def update_user(
     return user_service.update_user(db, user_id, payload, updated_by_id=actor.user_id)
 
 
+
+@router.post("/{user_id}/reset-password", summary="Admin resets user password")
+def admin_reset_password(
+    user_id: int,
+    payload: dict,
+    db:      Session = Depends(get_db),
+    actor:   User    = Depends(require_admin),
+):
+    from app.core.security import get_password_hash
+    new_password = (payload.get("new_password") or "").strip()
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400,
+            detail="Password must be at least 6 characters")
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.password_hash = get_password_hash(new_password)
+    db.commit()
+    _log(db, actor.user_id, "PASSWORD_RESET",
+         entity="User", entity_id=user_id,
+         detail=f"Admin reset password for {user.name}")
+    return {"message": f"Password reset successfully for {user.name}"}
+
+
 @router.delete("/{user_id}", summary="Delete user (Admin only)")
 def delete_user(
     user_id: int,
