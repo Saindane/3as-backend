@@ -101,9 +101,6 @@ def admin_reset_password(
         raise HTTPException(status_code=404, detail="User not found")
     user.password_hash = hash_password(new_password)
     db.commit()
-    _log(db, actor.user_id, "PASSWORD_RESET",
-         entity="User", entity_id=user_id,
-         detail=f"Admin reset password for {user.name}")
     return {"message": f"Password reset successfully for {user.name}"}
 
 
