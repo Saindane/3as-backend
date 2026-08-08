@@ -32,11 +32,25 @@ app.include_router(api_router)
 # ── Scheduler ─────────────────────────────────────────────────────
 @app.on_event("startup")
 async def on_startup():
-    # Run migrations on startup
-    import subprocess, os
+    import subprocess, os, logging
+    logger = logging.getLogger("uvicorn")
     db_url = os.environ.get("DATABASE_URL", "")
     if db_url:
-        subprocess.run(["alembic", "upgrade", "head"], check=False)
+        logger.info(f"Running alembic migrations...")
+        result = subprocess.run(
+            ["alembic", "upgrade", "head"],
+            capture_output=True, text=True
+        )
+        if result.stdout:
+            logger.info(f"Alembic: {result.stdout}")
+        if result.stderr:
+            logger.error(f"Alembic error: {result.stderr}")
+        if result.returncode == 0:
+            logger.info("Migrations completed successfully!")
+        else:
+            logger.error(f"Migration failed with code {result.returncode}")
+    else:
+        logger.error("DATABASE_URL not set — skipping migrations!")
 
 
 @app.on_event("shutdown")
