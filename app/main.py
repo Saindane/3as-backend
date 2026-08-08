@@ -32,7 +32,11 @@ app.include_router(api_router)
 # ── Scheduler ─────────────────────────────────────────────────────
 @app.on_event("startup")
 async def on_startup():
-    pass
+    # Run migrations on startup
+    import subprocess, os
+    db_url = os.environ.get("DATABASE_URL", "")
+    if db_url:
+        subprocess.run(["alembic", "upgrade", "head"], check=False)
 
 
 @app.on_event("shutdown")
