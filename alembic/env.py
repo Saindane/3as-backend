@@ -21,13 +21,11 @@ config = context.config
 # Override sqlalchemy.url from environment
 db_url = os.environ.get("DATABASE_URL", "")
 if not db_url:
-    raise ValueError(
-        "DATABASE_URL is not set!\n"
-        "Make sure your .env file exists and contains:\n"
-        "  DATABASE_URL=postgresql://postgres:Admin@localhost:5432/as3_db\n"
-        "Or set it manually in PowerShell:\n"
-        '  $env:DATABASE_URL="postgresql://postgres:Admin@localhost:5432/as3_db"'
-    )
+    raise ValueError("DATABASE_URL is not set!")
+
+# Railway gives postgres:// but SQLAlchemy needs postgresql://
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
 
 config.set_main_option("sqlalchemy.url", db_url)
 
