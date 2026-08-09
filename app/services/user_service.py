@@ -104,6 +104,21 @@ def _log(db: Session, user_id: int, action: str, entity: str = "User",
 
 def hard_delete_user(db: Session, user_id: int, deleted_by_id: int):
     user = get_user(db, user_id)
+
+    # Block delete if user is attached to a property
+    occupant = db.query(Occupant).filter(Occupant.user_id == user_id).first()
+    if occupant:
+        from app.models.property import Property
+        prop = db.query(Property).filter(
+            Property.property_id == occupant.property_id
+        ).first()
+        unit = prop.unit_no if prop else f"ID {occupant.property_id}"
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete user — they are attached to Unit {unit}. "
+                   f"Please reassign or remove the unit owner first."
+        )
+
     db.delete(user)
     db.commit()
     _log(db, deleted_by_id, "USER_DELETED", entity_id=user_id,
