@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from app.core.security import hash_password
-from app.models.user import User, UserRole
+from app.models.user import User
+from app.models.property import Occupant, UserRole
 from app.models.audit_log import AuditLog
 from app.schemas.user import UserCreate, UserUpdate
 
@@ -63,10 +64,25 @@ def update_user(db: Session, user_id: int, payload: UserUpdate, updated_by_id: i
 
 def delete_user(db: Session, user_id: int, deleted_by_id: int):
     user = get_user(db, user_id)
+
+    # Case 1: Block delete if user is attached to a property
+    occupant = db.query(Occupant).filter(Occupant.user_id == user_id).first()
+    if occupant:
+        from app.models.property import Property
+        prop = db.query(Property).filter(
+            Property.property_id == occupant.property_id
+        ).first()
+        unit = prop.unit_no if prop else f"ID {occupant.property_id}"
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete user — they are attached to Unit {unit}. "
+                   f"Please reassign or remove the unit owner first."
+        )
+
     user.is_active = False          # soft delete
     db.commit()
     _log(db, deleted_by_id, "USER_DEACTIVATED", entity_id=user_id)
-    return {"message": "User deactivated"}
+    return {"message": "User deleted successfully"}
 
 
 def change_password(db: Session, user_id: int, new_password: str):

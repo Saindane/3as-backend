@@ -65,11 +65,16 @@ def update_property(db: Session, property_id: int, payload: PropertyUpdate,
 
 def delete_property(db: Session, property_id: int, deleted_by_id: int):
     prop = get_property(db, property_id)
+    unit_no = prop.unit_no
+
+    # Delete related occupants first to avoid FK constraint error
+    db.query(Occupant).filter(Occupant.property_id == property_id).delete()
+
     db.delete(prop)
     db.commit()
     _log(db, deleted_by_id, "PROPERTY_DELETED", entity_id=property_id,
-         detail=f"unit={prop.unit_no}")
-    return {"message": "Property deleted"}
+         detail=f"unit={unit_no}")
+    return {"message": f"Property Unit {unit_no} deleted successfully"}
 
 
 def add_occupant(db: Session, property_id: int, payload: OccupantCreate,
