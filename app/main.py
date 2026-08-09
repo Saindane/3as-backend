@@ -32,25 +32,29 @@ app.include_router(api_router)
 # ── Scheduler ─────────────────────────────────────────────────────
 @app.on_event("startup")
 async def on_startup():
-    import subprocess, os, logging
+    import os, logging
+    from alembic.config import Config
+    from alembic import command
+
     logger = logging.getLogger("uvicorn")
     db_url = os.environ.get("DATABASE_URL", "")
-    if db_url:
-        logger.info(f"Running alembic migrations...")
-        result = subprocess.run(
-            ["alembic", "upgrade", "head"],
-            capture_output=True, text=True
-        )
-        if result.stdout:
-            logger.info(f"Alembic: {result.stdout}")
-        if result.stderr:
-            logger.error(f"Alembic error: {result.stderr}")
-        if result.returncode == 0:
-            logger.info("Migrations completed successfully!")
-        else:
-            logger.error(f"Migration failed with code {result.returncode}")
-    else:
+
+    if not db_url:
         logger.error("DATABASE_URL not set — skipping migrations!")
+        return
+
+    # Fix Railway postgres:// → postgresql://
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+    logger.info(f"Running alembic migrations...")
+    try:
+        alembic_cfg = Config("alembic.ini")
+        alembic_cfg.set_main_option("sqlalchemy.url", db_url)
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Migrations completed successfully!")
+    except Exception as e:
+        logger.error(f"Migration error: {e}")
 
 
 @app.on_event("shutdown")
