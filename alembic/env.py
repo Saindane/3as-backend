@@ -1,24 +1,17 @@
 import os
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, create_engine
 from alembic import context
 
-# ── Load .env file explicitly ─────────────────────────────────────
-# This ensures DATABASE_URL is available whether running via
-# 'alembic upgrade head' or 'python -m alembic upgrade head' on Windows
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    pass  # python-dotenv not installed — rely on environment variables
-
-# Load app models so Alembic can detect them
-from app.db.base import Base
-from app.models import user, otp, audit_log, property, bill, payment, complaint, notice, setting  # noqa: F401
+    pass
 
 config = context.config
 
-# Override sqlalchemy.url from environment
+# Get DATABASE_URL from environment
 db_url = os.environ.get("DATABASE_URL", "")
 if not db_url:
     raise ValueError("DATABASE_URL is not set!")
@@ -27,7 +20,13 @@ if not db_url:
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
+# Set URL BEFORE importing app models to avoid config.py reading .env
 config.set_main_option("sqlalchemy.url", db_url)
+os.environ["DATABASE_URL"] = db_url  # ensure app/db/base.py also gets correct URL
+
+# Load app models AFTER setting URL
+from app.db.base import Base
+from app.models import user, otp, audit_log, property, bill, payment, complaint, notice, setting  # noqa: F401
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -43,11 +42,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    connectable = create_engine(db_url, poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
