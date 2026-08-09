@@ -4,7 +4,7 @@ from sqlalchemy import func
 
 from app.core.security import hash_password
 from app.models.user import User
-from app.models.property import Occupant, UserRole
+from app.models.property import Occupant
 from app.models.audit_log import AuditLog
 from app.schemas.user import UserCreate, UserUpdate
 
