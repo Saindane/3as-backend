@@ -85,12 +85,12 @@ def generate_bills(
             details.append(f"Unit {prop.unit_no}: skipped (bill already exists)")
             continue
 
-        # Calculate penalty if requested
+        # New bills always start clean. Penalty is accrued independently
+        # per bill (based on that bill's own due_date) by
+        # apply_penalties_for_all() once it is actually overdue — it is
+        # never copied in from other unpaid bills for this property.
         penalty = 0.0
-        if payload.include_penalty:
-            penalty = _calculate_pending_penalty(db, prop.property_id)
-
-        total = payload.maintenance + penalty
+        total   = payload.maintenance
 
         bill = Bill(
             property_id=prop.property_id,
@@ -289,15 +289,6 @@ def get_collection_summary(db: Session, month: int, year: int) -> dict:
 
 
 # ── Private helpers ───────────────────────────────────────────────
-
-def _calculate_pending_penalty(db: Session, property_id: int) -> float:
-    """Sum up outstanding penalties from any existing overdue bills."""
-    overdue = db.query(Bill).filter(
-        Bill.property_id == property_id,
-        Bill.status.in_([BillStatus.PENDING, BillStatus.OVERDUE]),
-    ).all()
-    return sum(b.penalty for b in overdue)
-
 
 def _log(db: Session, user_id: int, action: str, entity: str = "Bill",
          entity_id: int = None, detail: str = None):
