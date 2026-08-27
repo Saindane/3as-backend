@@ -52,7 +52,7 @@ def update_property(db: Session, property_id: int, payload: PropertyUpdate,
     prop = get_property(db, property_id)
     if payload.unit_no   is not None: prop.unit_no   = payload.unit_no
     if payload.floor     is not None: prop.floor     = payload.floor
-    if payload.type      is not None: prop.type      = PropertyType(payload.type.lower())
+    if payload.type      is not None: prop.type      = PropertyType(payload.type.upper())
     if payload.area_sqft is not None: prop.area_sqft = payload.area_sqft
     if payload.owner_id  is not None:
         prop.owner_id = payload.owner_id
